@@ -1,0 +1,44 @@
+Privacy Policy for BlueKeys
+Effective Date: May 29, 2026
+
+Thank you for using BlueKeys.
+
+BlueKeys is an Android app that turns your device into a Bluetooth keyboard and mouse. Your privacy is important to us. It works locally using Bluetooth, without needing the internet, servers, or cloud accounts.
+
+1. No Data Collection or Sharing
+- No Personal Info: BlueKeys does not collect, store, track, or share any personal information.
+- No Accounts: You do not need to create an account, log in, or sync with any cloud service to use the app.
+- Keystrokes & Inputs: The app sends your keystrokes and mouse movements directly to your connected device in real time. We never log, save, or send your inputs to anyone.
+
+2.What we collect
+- Feedback: If you choose to send us feedback( includes last 10 error and crash logs-optional), we collect it using the formspree endpoint (https://formspree.io). This is the only time the app sends any information online, and it is completely optional. 
+
+3. Permissions We Need
+To work properly, BlueKeys needs these permissions:
+- Nearby Devices / Bluetooth: To find, pair, and connect with your computers or other devices.
+- Foreground Service / Notifications: To keep the connection stable while you are using the app.
+- Bluetooth System Settings: To turn Bluetooth on when you start the app.
+
+These permissions are strictly used to make the app work. We do not use them for tracking.
+
+4.NO Internet Usage
+- Core features work fully offline.
+- We do not use advertising SDKs, tracking tools, analytics, or payment processors.
+
+5.only internet usages :
+- only required to send feedback and download google fonts
+
+6. Compatibility
+- Works on Android 9 and newer.
+- Connects to Windows, macOS, Linux, and Android devices.
+
+8. Your Responsibility
+- Only connect to devices you trust.
+- Keep your paired devices secure.
+
+9. Changes to This Policy
+We may update this policy. Any updates will be posted on this page with a new effective date.
+
+10. Contact Us
+If you have questions, please email us at:
+to desktopio684@gmail.com

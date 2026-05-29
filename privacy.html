@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en" class="light overflow-x-hidden">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Privacy Policy | BlueKeys</title>
+  <meta name="description"
+    content="Privacy Policy for BlueKeys Bluetooth HID keyboard and mouse application. Designed with privacy in mind, working offline and locally." />
+  <link rel="icon" type="image/x-icon" href="assets/logo/logo%20.ico" />
+
+  <!-- Tailwind CSS (for layout utilities and forms) -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <!-- Tailwind Config (harmonized with welcome & features page) -->
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#000000",
+            secondary: "#8ecae6",
+            accent: "#8ecae6",
+            surface: "#FFFFFF",
+            "on-surface": "#1a1a1a",
+            "surface-container-low": "hsla(197, 60%, 93%, 0.4)",
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "9999px",
+          },
+          fontFamily: {
+            headline: ["Manrope", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+
+  <!-- Embedded Premium Custom Styles -->
+  <style>
+    /* Prevent horizontal scrollbar */
+    html,
+    body {
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+
+    body {
+      background-color: #f5f5f7bc;
+      background-image:
+        radial-gradient(at 0% 0%, rgba(142, 202, 230, 0.25) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(142, 202, 230, 0.15) 0px, transparent 50%);
+    }
+
+    /* Hide default cursor if custom cursor runs */
+    @media (hover: hover) and (pointer: fine) {
+
+      body.has-custom-cursor,
+      body.has-custom-cursor *,
+      body.has-custom-cursor *::before,
+      body.has-custom-cursor *::after {
+        cursor: none !important;
+      }
+    }
+
+    #custom-cursor {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 22px;
+      height: 22px;
+      pointer-events: none;
+      z-index: 99999;
+      will-change: transform;
+      backface-visibility: hidden;
+      transition: opacity 0.15s ease;
+      opacity: 0;
+    }
+
+    #custom-cursor img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform: rotate(20deg);
+      transform-origin: 18% 15%;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+      transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.16s ease;
+    }
+
+    #custom-cursor.is-hovering img {
+      transform: rotate(20deg) scale(1.18);
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.22));
+    }
+
+    #custom-cursor.is-clicking img {
+      transform: rotate(20deg) scale(0.88);
+      filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.14));
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #custom-cursor {
+        display: block;
+      }
+    }
+
+    /* Glassmorphism containers */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Ambient background orbs */
+    .ambient-orb {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: -1;
+      filter: blur(120px);
+      transform: translateZ(0);
+      opacity: 0.5;
+    }
+
+    .ambient-orb-1 {
+      top: 10%;
+      left: -10%;
+      width: 40vw;
+      height: 40vw;
+      background: rgba(142, 202, 230, 0.3);
+    }
+
+    .ambient-orb-2 {
+      bottom: 15%;
+      right: -10%;
+      width: 45vw;
+      height: 45vw;
+      background: rgba(142, 202, 230, 0.2);
+    }
+
+    /* Back Nav */
+    .back-nav {
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .back-nav:hover .arrow-icon {
+      transform: translateX(-4px);
+    }
+  </style>
+</head>
+
+<body class="font-body text-on-surface antialiased overflow-x-hidden relative min-h-screen pb-16">
+
+  <!-- Custom Cursor -->
+  <div id="custom-cursor" aria-hidden="true">
+    <img src="assets/Mouse.svg" alt="" draggable="false" />
+  </div>
+
+  <!-- Ambient Glow Orbs -->
+  <div class="ambient-orb ambient-orb-1"></div>
+  <div class="ambient-orb ambient-orb-2"></div>
+
+  <!-- Main Container -->
+  <div class="max-w-4xl mx-auto px-6 pt-12 md:pt-20 relative z-10">
+
+    <!-- Minimal Back Navigation -->
+    <div class="mb-8">
+      <a href="index.html" id="back-to-home-link"
+        class="back-nav inline-flex items-center gap-2 text-sm font-bold tracking-widest uppercase text-primary/50 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined arrow-icon transition-transform duration-300">arrow_back</span>
+        <span>Back to home</span>
+      </a>
+    </div>
+
+    <!-- Privacy Header Card -->
+    <header class="glass-card rounded-[2rem] p-8 md:p-12 mb-8 text-center relative overflow-hidden">
+      <!-- Top Decorative Accent Bar -->
+      <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-secondary via-blue-500 to-indigo-600"></div>
+
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary/15 text-primary mb-6">
+        <span class="material-symbols-outlined text-[32px] font-light">shield_lock</span>
+      </div>
+      <h1 class="font-headline font-extrabold text-4xl md:text-5xl tracking-tight text-neutral-900 mb-4">
+        Bluekeys Privacy Policy
+      </h1>
+      <p class="text-sm font-semibold tracking-wider text-primary/40 uppercase mb-3">
+        Effective Date: May 29, 2026
+      </p>
+      <div class="w-16 h-0.5 bg-secondary/40 mx-auto my-4"></div>
+      <p class="text-base md:text-lg text-primary/70 font-light leading-relaxed max-w-2xl mx-auto">
+        BlueKeys app is built from the ground up to respect your personal space. Our app operates locally, offline, and
+        secure.
+      </p>
+    </header>
+
+    <!-- Main Content Policy Details -->
+    <main class="space-y-6">
+
+      <!-- Intro Card -->
+      <section class="glass-card rounded-[1.5rem] p-6 md:p-8">
+        <p class="text-sm md:text-base leading-relaxed text-primary/75">
+          Thank you for using <strong>BlueKeys</strong>.
+        </p>
+        <p class="mt-4 text-sm md:text-base leading-relaxed text-primary/75">
+          BlueKeys is an Android app that turns your device into a Bluetooth keyboard and mouse. Your privacy is
+          important to us. It works locally using Bluetooth, without needing the internet, servers, or cloud accounts.
+        </p>
+
+        <!-- Quick Summary Bullets -->
+        <div class="mt-8 pt-6 border-t border-black/5">
+          <h3 class="font-headline font-bold text-lg text-neutral-900 mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-600">summarize</span>
+            Quick Summary
+          </h3>
+          <ul class="space-y-3.5">
+            <li class="flex items-start gap-3">
+              <span class="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[10px] font-bold tracking-wider uppercase mt-0.5 shrink-0">Yes</span>
+              <p class="text-sm text-primary/80 font-light leading-relaxed">
+                local Bluetooth transmission,only between your connected device.
+              </p>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="px-2 py-0.5 rounded-md bg-red-500/10 text-red-600 text-[10px] font-bold tracking-wider uppercase mt-0.5 shrink-0">No</span>
+              <p class="text-sm text-primary/80 font-light leading-relaxed">
+                cloud/server collections:BlueKeys does not collect, store, transmit, sell, or share personal information
+              </p>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="px-2 py-0.5 rounded-md bg-red-500/10 text-red-600 text-[10px] font-bold tracking-wider uppercase mt-0.5 shrink-0">No</span>
+              <p class="text-sm text-primary/80 font-light leading-relaxed">
+                storage/logging:BlueKeys does not require account creation, login, or cloud synchronization
+              </p>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="px-2 py-0.5 rounded-md bg-red-500/10 text-red-600 text-[10px] font-bold tracking-wider uppercase mt-0.5 shrink-0">No</span>
+              <p class="text-sm text-primary/80 font-light leading-relaxed">
+                third-party sharing.
+              </p>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="px-2 py-0.5 rounded-md bg-red-500/10 text-red-600 text-[10px] font-bold tracking-wider uppercase mt-0.5 shrink-0">No</span>
+              <p class="text-sm text-primary/80 font-light leading-relaxed">
+                login or account needed .
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 1. No Data Collection or Sharing -->
+      <section class="glass-card rounded-[1.5rem] p-6 md:p-8 hover:shadow-lg transition-shadow duration-300">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined">no_accounts</span>
+          </div>
+          <div class="space-y-4 w-full">
+            <h2 class="font-headline font-bold text-xl md:text-2xl text-neutral-900">
+              1. No Data Collection or Sharing
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div class="p-4 bg-white/40 rounded-xl border border-black/5">
+                <h3 class="font-bold text-sm text-neutral-900 flex items-center gap-2 mb-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> No Personal Info
+                </h3>
+                <p class="text-xs md:text-sm text-primary/70 font-light leading-relaxed">
+                  BlueKeys does not collect, store, track, or share any personal information.
+                </p>
+              </div>
+
+              <div class="p-4 bg-white/40 rounded-xl border border-black/5">
+                <h3 class="font-bold text-sm text-neutral-900 flex items-center gap-2 mb-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> No Accounts Needed
+                </h3>
+                <p class="text-xs md:text-sm text-primary/70 font-light leading-relaxed">
+                  You do not need to create an account, log in, or sync with any cloud service to use the app.
+                </p>
+              </div>
+
+              <div class="p-4 bg-white/40 rounded-xl border border-black/5 md:col-span-2">
+                <h3 class="font-bold text-sm text-neutral-900 flex items-center gap-2 mb-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Keystrokes & Inputs
+                </h3>
+                <p class="text-xs md:text-sm text-primary/70 font-light leading-relaxed">
+The app sends your keystrokes and mouse movements directly to your connected device in <strong>real time over local Bluetooth.</strong> <u>Your inputs are <b>never</b> stored, logged, shared, or transmitted to anyone beyond the connected device</u> The only information you may voluntarily send is feedback submitted through the app.
+                </p>
+              </div>
+
+              <div class="p-4 bg-white/40 rounded-xl border border-blue-200/50 bg-blue-50/10 md:col-span-2">
+                <h3 class="font-bold text-sm text-neutral-900 flex items-center gap-2 mb-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Optional Feedback
+                </h3>
+                <p class="text-xs md:text-sm text-primary/70 font-light leading-relaxed">
+                  If you choose to send us feedback (includes last 10 error and crash logs - completely optional), we
+                  collect it using the formspree endpoint (<strong>https://formspree.io</strong>). This is the only time
+                  the app sends any information online.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Permissions We Need -->
+      <section class="glass-card rounded-[1.5rem] p-6 md:p-8 hover:shadow-lg transition-shadow duration-300">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined">key</span>
+          </div>
+          <div class="space-y-4 w-full">
+            <h2 class="font-headline font-bold text-xl md:text-2xl text-neutral-900">
+              3. Permissions We Need
+            </h2>
+            <p class="text-sm text-primary/70 font-light leading-relaxed">
+              To work properly, BlueKeys needs access to specific system services. These permissions are strictly used
+              to make the app function and are never used for tracking.
+            </p>
+            <div class="space-y-3 pt-2">
+              <div class="flex gap-3 items-start p-3.5 bg-white/35 rounded-xl border border-black/5">
+                <span class="material-symbols-outlined text-[20px] text-indigo-500 mt-0.5">bluetooth</span>
+                <div>
+                  <h4 class="font-bold text-xs md:text-sm text-neutral-900">Nearby Devices / Bluetooth</h4>
+                  <p class="text-xs text-primary/65 font-light mt-0.5">
+                    Used to discover, pair, and connect with your computers, tablets, or other devices.
+                  </p>
+                </div>
+              </div>
+              <div class="flex gap-3 items-start p-3.5 bg-white/35 rounded-xl border border-black/5">
+                <span class="material-symbols-outlined text-[20px] text-indigo-500 mt-0.5">notifications</span>
+                <div>
+                  <h4 class="font-bold text-xs md:text-sm text-neutral-900">Foreground Service / Notifications</h4>
+                  <p class="text-xs text-primary/65 font-light mt-0.5">
+                    Ensures a steady, unbroken connection while you your devices in real time.
+                  </p>
+                </div>
+              </div>
+              <div class="flex gap-3 items-start p-3.5 bg-white/35 rounded-xl border border-black/5">
+                <span class="material-symbols-outlined text-[20px] text-indigo-500 mt-0.5">settings_bluetooth</span>
+                <div>
+                  <h4 class="font-bold text-xs md:text-sm text-neutral-900">Bluetooth System Settings</h4>
+                  <p class="text-xs text-primary/65 font-light mt-0.5">
+                    Allows the app turn on Bluetooth by user.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. NO Internet Usage -->
+      <section class="glass-card rounded-[1.5rem] p-6 md:p-8 hover:shadow-lg transition-shadow duration-300">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined">wifi_off</span>
+          </div>
+          <div class="space-y-4 w-full">
+            <h2 class="font-headline font-bold text-xl md:text-2xl text-neutral-900">
+              4. NO Internet Usage
+            </h2>
+            <ul class="space-y-2.5 text-xs md:text-sm text-primary/80 font-light leading-relaxed">
+              <li class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[16px] text-sky-500">done</span>
+                <span>- Core features work fully offline.</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[16px] text-sky-500">done</span>
+                <span>We do not use advertising SDKs, tracking tools, analytics, or payment processors.</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[16px] text-indigo-500">info</span>
+                <span>Internet is only used to send optional feedback and to download Google Fonts.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. only internet usages : -->
+      <section class="glass-card rounded-[1.5rem] p-6 md:p-8 hover:shadow-lg transition-shadow duration-300">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined">globe</span>
+          </div>
+          <div class="space-y-4 w-full">
+            <h2 class="font-headline font-bold text-xl md:text-2xl text-neutral-900">
+              5. only internet usages :
+            </h2>
+            <div class="p-4 bg-white/40 rounded-xl border border-black/5">
+              <p class="text-xs md:text-sm text-primary/80 font-light leading-relaxed">
+                - only required to send feedback and download google fonts
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Your Responsibility -->
+      <section class="glass-card rounded-[1.5rem] p-6 md:p-8 hover:shadow-lg transition-shadow duration-300">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined">gpp_maybe</span>
+          </div>
+          <div class="space-y-4 w-full">
+            <h2 class="font-headline font-bold text-xl md:text-2xl text-neutral-900">
+              5. Your Responsibility
+            </h2>
+            <ul class="space-y-2 text-sm text-primary/75 font-light leading-relaxed">
+              <li class="flex items-start gap-2">
+                <span class="material-symbols-outlined text-[16px] text-amber-500 mt-1">warning</span>
+                <span>Only connect to devices you trust.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="material-symbols-outlined text-[16px] text-red-500 mt-0.5">security</span>
+                <span>- Keep your paired devices secure.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Changes to This Policy & Contact Us -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Changes to Policy -->
+        <section class="glass-card rounded-[1.5rem] p-6 hover:shadow-lg transition-shadow duration-300">
+          <div class="flex gap-4">
+            <div
+              class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined">update</span>
+            </div>
+            <div>
+              <h2 class="font-headline font-bold text-lg text-neutral-900 mb-2">
+                6. Policy Changes
+              </h2>
+              <p class="text-xs md:text-sm text-primary/70 font-light leading-relaxed">
+                We may update this policy in the future. Any changes will be posted here with an updated effective date.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Contact Us -->
+        <section class="glass-card rounded-[1.5rem] p-6 hover:shadow-lg transition-shadow duration-300">
+          <div class="flex gap-4">
+            <div class="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined">mail</span>
+            </div>
+            <div>
+              <h2 class="font-headline font-bold text-lg text-neutral-900 mb-2">
+                7. Contact Us
+              </h2>
+              <p class="text-xs md:text-sm text-primary/70 font-light leading-relaxed">
+                If you have questions or support requests, please contact us at:
+              </p>
+              <a href="mailto:desktopio684@gmail.com" id="contact-email-link"
+                class="inline-flex items-center gap-1.5 mt-2 text-xs md:text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+                <span>desktopio684@gmail.com</span>
+                <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-16 text-center border-t border-black/5 pt-8">
+      <p class="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-primary/35">
+        © 2026 BlueKeys. Engineered for Nothing.
+      </p>
+    </footer>
+
+  </div>
+
+  <!-- Custom Cursor Controller Script -->
+  <script>
+    (function () {
+      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+      const cursor = document.getElementById('custom-cursor');
+      if (!cursor) return;
+
+      document.body.classList.add('has-custom-cursor');
+
+      const TIP_X = 22 * 0.18;
+      const TIP_Y = 22 * 0.15;
+
+      window.addEventListener('mousemove', (e) => {
+        cursor.style.transform = `translate3d(${e.clientX - TIP_X}px, ${e.clientY - TIP_Y}px, 0)`;
+        if (cursor.style.opacity !== '1') cursor.style.opacity = '1';
+      }, { passive: true });
+
+      document.addEventListener('mouseleave', () => { cursor.style.opacity = '0'; });
+      document.addEventListener('mouseenter', () => { cursor.style.opacity = '1'; });
+
+      const INTERACTIVE = 'a, button, [role="button"], input, textarea, select, label, [tabindex]';
+      document.addEventListener('mouseover', (e) => {
+        if (e.target.closest(INTERACTIVE)) cursor.classList.add('is-hovering');
+      }, { passive: true });
+      document.addEventListener('mouseout', (e) => {
+        if (e.target.closest(INTERACTIVE)) cursor.classList.remove('is-hovering');
+      }, { passive: true });
+
+      window.addEventListener('mousedown', () => {
+        cursor.classList.remove('is-hovering');
+        cursor.classList.add('is-clicking');
+      });
+      window.addEventListener('mouseup', () => { cursor.classList.remove('is-clicking'); });
+    })();
+  </script>
+</body>
+
+</html>

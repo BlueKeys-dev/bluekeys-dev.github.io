@@ -1,0 +1,821 @@
+<!doctype html>
+
+<html class="light overflow-x-hidden" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>BlueKeys | Seamless Connectivity</title>
+  <link rel="icon" type="image/x-icon" href="assets/logo/logo%20.ico" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Tailwind config MUST come after the CDN script -->
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#000000",
+            secondary: "#8ecae6",
+            accent: "#8ecae6",
+            surface: "#FFFFFF",
+            "on-surface": "#1a1a1a",
+            "surface-container-low": "hsla(197, 60%, 93%, 0.4)",
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "9999px",
+          },
+          fontFamily: {
+            headline: ["Manrope", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@300;400;500&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <script src="js/script.js" defer></script>
+  <script src="js/shader-upgrade.js" defer></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body class="font-body text-on-surface antialiased overflow-x-hidden">
+  <!-- Custom Cursor — SVG for perfect Retina/4K scaling (hidden on touch via CSS) -->
+  <div id="custom-cursor" aria-hidden="true">
+    <img src="assets/Mouse.svg" alt="" draggable="false" />
+  </div>
+
+  <div id="app-scroll-container" class="snap-container overflow-x-hidden">
+    <main id="welcome-section"
+      class="snap-section relative min-h-screen lg:h-screen flex items-center  py-8 lg:py-0 overflow-visible lg:overflow-hidden">
+      <!-- Responsive Shader Background with Progressive Loading & Mobile Video -->
+      <div id="shader-bg">
+        <!-- Fallback image: always present, visible until video takes over on mobile -->
+        <img
+          id="shader-img"
+          src="shaders/mobile-9:16/desktop - low resolution.jpeg"
+          alt=""
+          role="presentation"
+          class="shader-bg-img"
+          decoding="async"
+        />
+        <canvas id="shader-transition-canvas"></canvas>
+        <!-- Mobile ping-pong video layers — A and B alternate so there is
+             zero gap: while A plays, B silently buffers the next clip.      -->
+        <video id="shader-video-a" class="shader-bg-video" muted playsinline
+          preload="none" aria-hidden="true" role="presentation"></video>
+        <video id="shader-video-b" class="shader-bg-video" muted playsinline
+          preload="none" aria-hidden="true" role="presentation"></video>
+      </div>
+      <script>
+        (function () {
+          var img = document.getElementById('shader-img');
+          if (!img) return;
+
+          /* ── Image helpers ──────────────────────────────────────────── */
+          function revealImg() { img.classList.add('is-loaded'); }
+          function hideImg() {
+            img.classList.remove('is-loaded');
+            // Also gracefully fade out the WebGL canvas if it is currently running
+            var cvs = document.getElementById('shader-transition-canvas');
+            if (cvs) {
+              var cvsDisplay = window.getComputedStyle(cvs).display;
+              if (cvsDisplay !== 'none') {
+                cvs.style.transition = 'opacity 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                cvs.style.opacity = '0';
+              }
+            }
+          }
+
+          function onImgReady() {
+            revealImg();
+            if (typeof startVideoSystem === 'function') startVideoSystem();
+          }
+
+          if (img.complete && img.naturalWidth > 0) {
+            onImgReady();
+          } else {
+            img.addEventListener('load', onImgReady, { once: true });
+          }
+          img.addEventListener('error', function () { img.style.display = 'none'; }, { once: true });
+
+          /* ── Hi-res image upgrade (WebGL Displacement Morph) ────────────────────────── */
+          if (typeof initHighResUpgrade === 'function') {
+            initHighResUpgrade(img);
+          } else {
+            // Wait for defer script to load if necessary
+            window.addEventListener('load', function() {
+              if (typeof initHighResUpgrade === 'function') {
+                initHighResUpgrade(img);
+              }
+            });
+          }
+
+          /* ══ MOBILE PING-PONG VIDEO CONTROLLER ════════════════════════════
+
+             Architecture:
+               • Two <video> elements: A and B, always at opacity 0 or 0.5.
+               • While A plays (active), B silently loads+buffers the NEXT
+                 clip via load() — safe because B is invisible.
+               • When A.ended fires → B.play() is instant (already buffered).
+               • CSS crossfade swaps their opacities simultaneously —
+                 no src change, no load(), zero black frame.
+             ════════════════════════════════════════════════════ */
+
+          // Guard: mobile only
+          if (window.innerWidth > 640) return;
+
+          // Guard: network quality (4G only, or unknown)
+          var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+          if (conn && (conn.saveData ||
+              conn.effectiveType === 'slow-2g' ||
+              conn.effectiveType === '2g' ||
+              conn.effectiveType === '3g')) return;
+
+          var vidA = document.getElementById('shader-video-a');
+          var vidB = document.getElementById('shader-video-b');
+          if (!vidA || !vidB) return;
+
+          // ——— State —————————————————————————————————————————
+          // Videos ordered smallest→largest so first visible video loads fastest
+          var sequence    = ['shaders/video/mobile/2.mp4',
+                             'shaders/video/mobile/1.mp4',
+                             'shaders/video/mobile/0.mp4'];
+          var blobs       = [];      // downloaded Blob URLs, indexed by sequence
+          var seqPlaying  = 0;       // index of currently playing video in sequence
+          var slot        = 0;       // 0 = A is active, 1 = B is active
+          var T           = 1800;    // crossfade duration ms (matches CSS 1.8s)
+          var TIMEOUT_XHR = 15000;   // max ms for one XHR download
+          var started     = false;   // has the sequence been kicked off yet
+
+          function activeEl()  { return slot === 0 ? vidA : vidB; }
+          function standbyEl() { return slot === 0 ? vidB : vidA; }
+          function swapSlot()  { slot = 1 - slot; }
+
+          // ——— Direct src downloader (same-origin, no XHR/CORS issues) ———
+          // Instead of XHR blob, we let the <video> element load the src directly.
+          // The browser handles caching and buffering natively — no blob URLs needed.
+          function downloadBlob(idx) {
+            if (idx >= sequence.length) return;
+            // Store the raw path directly — no blob needed for same-origin video
+            blobs[idx] = sequence[idx];
+            // Immediately continue to next
+            downloadBlob(idx + 1);
+            // Kick off playback if first clip
+            if (idx === 0 && !started && img.classList.contains('is-loaded')) {
+              kickoff();
+            }
+          }
+
+          // ——— Prime a STANDBY element (invisible load + buffer) —————————
+          // Calling load() on a hidden element is the whole trick:
+          // the browser fully decodes the first frame so play() is instant.
+          function primeStandby(idx, onPrimed) {
+            if (idx >= sequence.length) return;
+
+            function tryPrime() {
+              if (blobs[idx] === undefined) {
+                // Not downloaded yet — poll until ready
+                setTimeout(tryPrime, 300);
+                return;
+              }
+              if (!blobs[idx]) { onPrimed && onPrimed(false); return; } // download failed
+
+              var sb = standbyEl();
+              sb.src = blobs[idx];
+              sb.addEventListener('canplay', function () {
+                sb._primed = true;
+                onPrimed && onPrimed(true);
+              }, { once: true });
+              // Fallback — treat as primed after 2 s even if canplay stalls
+              setTimeout(function () {
+                if (!sb._primed) { sb._primed = true; onPrimed && onPrimed(true); }
+              }, 2000);
+              sb.load(); // safe: sb is invisible (opacity 0)
+            }
+            tryPrime();
+          }
+
+          // ——— Crossfade helpers —————————————————————————————————
+          function showVideo(el) { el.classList.add('is-loaded'); }
+          function hideVideo(el) { el.classList.remove('is-loaded'); }
+
+          // Image → first video: simultaneous crossfade
+          function crossfadeImgToVideo(el) {
+            showVideo(el);
+            hideImg(); // Fades out immediately as video fades in
+          }
+
+          // Video A → Video B: simultaneous opacity swap — the key to zero blackout
+          function crossfadeVideos(incoming, outgoing) {
+            showVideo(incoming);   // fades in  over 1 s
+            hideVideo(outgoing);   // fades out over 1 s  ← same moment, no gap
+          }
+
+          // Last video → image: image fades in, then video fades out
+          function crossfadeVideoToImg(el) {
+            revealImg();
+            setTimeout(function () {
+              hideVideo(el);
+              el.pause();
+            }, T);
+          }
+
+          // ——— Core playback engine ————————————————————————————————
+          function playClip(el, isFirst) {
+            var p = el.play();
+            if (p && typeof p.then === 'function') {
+              p.then(function () {
+                if (isFirst) crossfadeImgToVideo(el);
+              }).catch(function () {
+                revealImg(); // autoplay blocked — fall back to static image
+              });
+            } else {
+              if (isFirst) crossfadeImgToVideo(el);
+            }
+          }
+
+          // Called when the active element finishes playing its clip
+          function onClipEnded() {
+            var nextSeq = seqPlaying + 1;
+
+            if (nextSeq >= sequence.length) {
+              // All done — do not fade back to the static image.
+              // Just leave the final video paused on its last frame.
+              return;
+            }
+
+            // ─── The magic moment ──────────────────────────────────────
+            // Standby is already loaded + buffered from primeStandby().
+            // play() fires on a decoded first frame — zero load time.
+            var incoming = standbyEl();
+            var outgoing = activeEl();
+
+            seqPlaying = nextSeq;
+            swapSlot(); // incoming is now active
+
+            crossfadeVideos(incoming, outgoing); // simultaneous opacity swap
+
+            // Play incoming (already buffered — no load() needed)
+            incoming.play().catch(function () { /* silently ignore */ });
+
+            // After the outgoing fades out, pause and free it, then prime it
+            // for the video AFTER next (if any)
+            setTimeout(function () {
+              outgoing.pause();
+              outgoing._primed = false;
+              primeStandby(seqPlaying + 1); // e.g. prime clip 2 while clip 1 plays
+            }, T);
+
+            // Register ended handler on the new active
+            incoming.addEventListener('ended', onClipEnded, { once: true });
+          }
+
+          // ——— Kickoff: plays clip 0 on active, primes clip 1 on standby ———
+          function kickoff() {
+            if (started) return;
+            started = true;
+
+            var blobUrl = blobs[0];
+            if (!blobUrl) return; // clip 0 download failed, abort
+
+            var act = activeEl();
+            act.src = blobUrl;
+
+            // Guard: ensure canplay + fallback only fire once
+            var kickFired = false;
+            function doKickPlay() {
+              if (kickFired) return;
+              kickFired = true;
+              playClip(act, true /*isFirst*/);
+              primeStandby(1); // start buffering clip 1 into standby
+              act.addEventListener('ended', onClipEnded, { once: true });
+            }
+
+            act.addEventListener('canplay', doKickPlay, { once: true });
+            // Fallback: if canplay never fires (old browser / stalled)
+            setTimeout(doKickPlay, 3000);
+            act.load();
+          }
+
+          // ——— Entry point ——————————————————————————————————————
+          var videoSystemStarted = false;
+          function startVideoSystem() {
+            if (videoSystemStarted) return;
+            videoSystemStarted = true;
+            // Slight delay so the fallback image is painted first
+            setTimeout(function () { downloadBlob(0); }, 200);
+          }
+
+          if (img.classList.contains('is-loaded')) {
+            startVideoSystem();
+          }
+
+        })();
+      </script>
+
+      <!-- Background Glow (Left) - uses opacity gradient instead of blur for performance -->
+      <div
+        class="absolute top-1/3 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[100%] bg-primary/5 rounded-full -z-10 opacity-60">
+      </div>
+
+      <div
+        class="max-w-[90rem] mx-auto px-6 sm:px-12 lg:px-16 w-full grid grid-cols-1 gap-y-8 lg:gap-y-10 items-center py-6 lg:py-0">
+        <!-- Left Content Area (Centered Typography) -->
+        <div
+          class="relative z-10 flex flex-col items-center text-center space-y-8 lg:space-y-10 w-full max-w-6xl mx-auto">
+          <div class="space-y-6 flex flex-col items-center">
+            <h1
+              class="font-headline font-extrabold text-6xl pt-5 md:pt-20 md:text-8xl lg:text-7xl xl:text-8xl 2xl:text-9xl mx-auto bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-500 leading-[1] tracking-tighter py-2 px-6">
+              BlueKeys</h1>
+            <p
+              class="text-lg md:text-xl lg:text-xl xl:text-2xl 2xl:text-3xl text-primary/75 font-light leading-relaxed max-w-full md:max-w-3xl mx-auto">
+              <b>One app. Any device. Keyboard and mouse — connected seamlessly via Bluetooth.</b>
+            </p>
+          </div>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-10 pt-4">
+            <div class="relative group/rgb">
+              <!-- RGB Soft Aura Backlight Glow (Active after load) -->
+              <div id="download-button-rgb-glow"
+                class="absolute -inset-[6px] rounded-full blur-xl opacity-0 transition-opacity duration-[1500ms] ease-out pointer-events-none animate-rgb-flow"
+                aria-hidden="true"></div>
+
+              <!-- RGB Sharp Outer Border (Active after load) -->
+              <div id="download-button-rgb-border"
+                class="absolute -inset-[2px] rounded-full opacity-0 transition-opacity duration-[1500ms] ease-out pointer-events-none animate-rgb-flow"
+                aria-hidden="true"></div>
+
+              <button
+                class="relative z-10 group overflow-hidden bg-primary text-white px-8 py-4 text-sm md:text-base font-bold tracking-[0.2em] uppercase rounded-full transition-transform duration-700 btn-shadow hover:-translate-y-1 active:scale-[0.98]">
+                <span class="relative z-10 flex items-center gap-3">
+                  <img src="icon/playstore.svg" class="w-6 h-6" alt="Play Store icon" />
+                  Download
+                </span>
+                <div
+                  class="absolute inset-0 bg-gradient-to-r from-neutral-800 to-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                </div>
+              </button>
+            </div>
+            <a href="features.html"
+              class="flex items-center gap-4 text-sm md:text-base font-bold tracking-widest uppercase text-primary/60 hover:text-primary transition-colors group">
+              <span class="">Features</span>
+              <span
+                class="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </a>
+          </div>
+          <div class="pt-4 flex flex-wrap items-center justify-center gap-y-2 gap-x-3 sm:gap-x-4 opacity-40 grayscale">
+            <span class="font-headline font-bold text-[10px] sm:text-xs tracking-widest uppercase whitespace-nowrap">Media Widget</span>
+            <span class="hidden sm:block h-4 w-px bg-current shrink-0"></span>
+            <span class="font-headline font-bold text-[10px] sm:text-xs tracking-widest uppercase whitespace-nowrap">Bluetooth share</span>
+            <span class="hidden sm:block h-4 w-px bg-current shrink-0"></span>
+            <span class="font-headline font-bold text-[10px] sm:text-xs tracking-widest uppercase whitespace-nowrap">Universal OS</span>
+          </div>
+        </div>
+        <!-- Right Showcase Area (The "Curated Gallery" Dual-Mockup Stack) -->
+        <div class="relative flex justify-center lg:justify-center items-center overflow-visible w-full">
+          <!-- Background Decorative Element -->
+          <div
+            class="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[#8ecae6]/20 rounded-full -z-10 opacity-60">
+          </div>
+
+          <!-- Mobile/Tablet Layout (Portrait) -->
+          <!-- Tablet View (768px to 1023px) - Preserved Dual-Mockup Stack -->
+          <div class="relative hidden md:flex items-center justify-center lg:hidden w-full">
+            <!-- Secondary Frame (Keyboard - Behind) -->
+            <div
+              class="absolute z-0 opacity-80 hidden md:block bg-black p-1.5 rounded-[1.1rem] border border-neutral-900"
+              style="
+                aspect-ratio: 1100/2300;
+                height: min(92vh, 690px);
+                width: auto;
+                transform: translateX(110px) scale(0.88);
+                transform-origin: center;
+              ">
+              <div class="w-full h-full rounded-[0.9rem] overflow-hidden bg-white relative">
+                <img class="w-full h-full object-cover" alt="BlueKeys Keyboard Interface" src="light/keybaord.jpg" />
+                <div
+                  class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-40 pointer-events-none mix-blend-overlay">
+                </div>
+              </div>
+            </div>
+
+            <!-- Primary Frame (Mouse - Front) -->
+            <div class="relative z-10 bg-black p-1.5 rounded-[1.1rem] border border-neutral-900 origin-center" style="
+                aspect-ratio: 1100/2300;
+                height: min(90vh, 678px);
+                width: auto;
+                transform: translateX(-110px);
+              ">
+              <div class="w-full h-full rounded-[0.9rem] overflow-hidden bg-white relative">
+                <img class="w-full h-full object-cover" alt="BlueKeys Mouse Interface" src="light/mouse.jpg" />
+                <div
+                  class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-40 pointer-events-none mix-blend-overlay">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobile View (< 768px) - High-End Centerpiece Slideshow -->
+          <div class="flex flex-col md:hidden items-center justify-center w-full gap-y-6">
+            <!-- Mockup & Arrows Container -->
+            <div class="relative flex items-center justify-center w-full px-12">
+              <!-- Mockup Frame -->
+              <div
+                class="relative z-10 bg-black p-1.5 rounded-[1.1rem] border border-neutral-900 scale-95 sm:scale-100 origin-center"
+                style="
+                  aspect-ratio: 1100/2300;
+                  height: min(80vh, 520px);
+                  width: auto;
+                ">
+                <div class="w-full h-full rounded-[0.9rem] overflow-hidden bg-white relative"
+                  id="mobile-slideshow-viewport">
+                  <!-- Slide 0: Mouse -->
+                  <div class="absolute inset-0 transition-opacity duration-700 opacity-100 z-10 mobile-slide"
+                    data-slide="0">
+                    <img class="w-full h-full object-cover" alt="BlueKeys Mouse Interface" src="light/mouse.jpg" />
+                    <div
+                      class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-40 pointer-events-none mix-blend-overlay">
+                    </div>
+                  </div>
+                  <!-- Slide 1: Keyboard -->
+                  <div class="absolute inset-0 transition-opacity duration-700 opacity-0 z-0 mobile-slide"
+                    data-slide="1">
+                    <img class="w-full h-full object-cover" loading="lazy" alt="BlueKeys Keyboard Interface"
+                      src="light/keybaord.jpg" />
+                    <div
+                      class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-40 pointer-events-none mix-blend-overlay">
+                    </div>
+                  </div>
+                  <!-- Slide 2: Media Widget -->
+                  <div class="absolute inset-0 transition-opacity duration-700 opacity-0 z-0 mobile-slide"
+                    data-slide="2">
+                    <img class="w-full h-full object-cover" loading="lazy" alt="BlueKeys Media Interface" src="light/media.png" />
+                    <div
+                      class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-40 pointer-events-none mix-blend-overlay">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sleek Chevrons (Outside the frame) -->
+              <button
+                class="absolute left-0 xs:left-2 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-neutral-900/5  flex items-center justify-center text-neutral-800 transition-all z-20"
+                aria-label="Previous slide" id="mobile-prev-btn">
+                <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+              </button>
+              <button
+                class="absolute right-0 xs:right-2 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-neutral-900/5 flex items-center justify-center text-neutral-800 transition-all z-20"
+                aria-label="Next slide" id="mobile-next-btn">
+                <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+              </button>
+            </div>
+
+            <!-- Indicator Pill (Outside and below the frame) -->
+            <div class="flex items-center gap-3 bg-neutral-900/5 border  px-4 py-2 rounded-full">
+              <button class="w-2.5 h-2.5 rounded-full bg-neutral-800 transition-all duration-300 mobile-dot"
+                aria-label="Go to slide 1" data-dot="0"></button>
+              <button
+                class="w-2.5 h-2.5 rounded-full bg-neutral-800/30 active:bg-neutral-800/50 transition-all duration-300 mobile-dot"
+                aria-label="Go to slide 2" data-dot="1"></button>
+              <button
+                class="w-2.5 h-2.5 rounded-full bg-neutral-800/30 active:bg-neutral-800/50 transition-all duration-300 mobile-dot"
+                aria-label="Go to slide 3" data-dot="2"></button>
+            </div>
+          </div>
+
+          <!-- Desktop Layout (Widescreen Slideshow - Aligned Column Center, Compact & Premium) -->
+          <div class="hidden lg:flex flex-col items-center justify-center relative w-full gap-y-4">
+            <!-- Slideshow Viewport Container -->
+            <div id="desktop-slideshow-container"
+              class="relative w-[95%] lg:w-[90%] max-w-2xl xl:max-w-4xl 2xl:max-w-5xl group/slideshow float-y-2 z-10">
+
+              <!-- Outer Premium Bezel Frame -->
+              <div
+                class="relative w-full transition-transform duration-700 scale-[1.01] hover:scale-[1.04] transform-gpu backface-hidden bg-black p-1.5 rounded-[1.2rem] border border-neutral-900 ">
+
+                <!-- Viewport window -->
+                <div class="w-full aspect-[2400/1080] rounded-[0.9rem] overflow-hidden bg-neutral-950 relative"
+                  id="desktop-slideshow-viewport">
+
+                  <!-- Slide 0: Keyboard -->
+                  <div
+                    class="absolute inset-0 transition-all duration-1000 ease-out opacity-100 scale-100 z-10 desktop-slide"
+                    data-desktop-slide="0">
+                    <img class="w-full h-full object-cover select-none" alt="BlueKeys Keyboard Landscape"
+                      src="light/landscape/keybaord.webp" draggable="false" />
+                    <div
+                      class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30 pointer-events-none mix-blend-overlay">
+                    </div>
+                  </div>
+
+                  <!-- Slide 1: Mouse -->
+                  <div
+                    class="absolute inset-0 transition-all duration-1000 ease-out opacity-0 scale-[0.97] z-0 desktop-slide"
+                    data-desktop-slide="1">
+                    <img class="w-full h-full object-cover select-none" loading="lazy" alt="BlueKeys Mouse Landscape"
+                      src="light/landscape/mouse.webp" draggable="false" />
+                    <div
+                      class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30 pointer-events-none mix-blend-overlay">
+                    </div>
+                  </div>
+
+                  <!-- Slide 2: Media Widget -->
+                  <div
+                    class="absolute inset-0 transition-all duration-1000 ease-out opacity-0 scale-[0.97] z-0 desktop-slide"
+                    data-desktop-slide="2">
+                    <img class="w-full h-full object-cover select-none" loading="lazy" alt="BlueKeys Media Landscape"
+                      src="light/landscape/media.webp" draggable="false" />
+                    <div
+                      class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30 pointer-events-none mix-blend-overlay">
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Widescreen Navigation Chevrons -->
+              <button
+                class="absolute -left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full  shadow-lg backdrop-blur-md flex items-center justify-center text-neutral-800 transition-all duration-300 opacity-0 scale-90 translate-x-2 group-hover/slideshow:opacity-100 group-hover/slideshow:scale-100 group-hover/slideshow:translate-x-0 z-20"
+                aria-label="Previous landscape slide" id="desktop-prev-btn">
+                <span class="material-symbols-outlined text-[24px]">chevron_left</span>
+              </button>
+              <button
+                class="absolute -right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full  shadow-lg backdrop-blur-md flex items-center justify-center text-neutral-800 transition-all duration-300 opacity-0 scale-90 -translate-x-2 group-hover/slideshow:opacity-100 group-hover/slideshow:scale-100 group-hover/slideshow:translate-x-0 z-20"
+                aria-label="Next landscape slide" id="desktop-next-btn">
+                <span class="material-symbols-outlined text-[24px]">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </main>
+
+    <!-- Dynamic Features Content Container -->
+    <div id="features-section-container" class="snap-section relative min-h-screen overflow-hidden">
+      <!-- Injected by loader script -->
+    </div>
+  </div>
+
+  <!-- ── Desktop Slideshow Controller ───────────────────────── -->
+  <script>
+    (function () {
+      const slides = document.querySelectorAll('.desktop-slide');
+      const dots = document.querySelectorAll('.desktop-dot'); // empty NodeList — no-op
+      const prevBtn = document.getElementById('desktop-prev-btn');
+      const nextBtn = document.getElementById('desktop-next-btn');
+      const viewport = document.getElementById('desktop-slideshow-viewport');
+      const slideshowContainer = document.getElementById('desktop-slideshow-container');
+
+      if (!slides.length) return;
+
+      let currentIndex = 0;
+      let autoplayTimer = null;
+      const AUTOPLAY_INTERVAL = 4000; // 4 seconds
+
+      function showSlide(index) {
+        if (index >= slides.length) index = 0;
+        if (index < 0) index = slides.length - 1;
+
+        currentIndex = index;
+
+        // Elegant crossfade and depth scale transition
+        slides.forEach((slide, idx) => {
+          if (idx === currentIndex) {
+            slide.classList.remove('opacity-0', 'scale-[0.97]', 'z-0');
+            slide.classList.add('opacity-100', 'scale-100', 'z-10');
+          } else {
+            slide.classList.remove('opacity-100', 'scale-100', 'z-10');
+            slide.classList.add('opacity-0', 'scale-[0.97]', 'z-0');
+          }
+        });
+
+        // Update dots styling
+        dots.forEach((dot, idx) => {
+          if (idx === currentIndex) {
+            dot.classList.remove('bg-neutral-800/30');
+            dot.classList.add('bg-neutral-800');
+          } else {
+            dot.classList.remove('bg-neutral-800');
+            dot.classList.add('bg-neutral-800/30');
+          }
+        });
+      }
+
+      function startAutoplay() {
+        stopAutoplay();
+        autoplayTimer = setInterval(() => {
+          showSlide(currentIndex + 1);
+        }, AUTOPLAY_INTERVAL);
+      }
+
+      function stopAutoplay() {
+        if (autoplayTimer) {
+          clearInterval(autoplayTimer);
+          autoplayTimer = null;
+        }
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          showSlide(currentIndex + 1);
+          startAutoplay();
+        });
+      }
+
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          showSlide(currentIndex - 1);
+          startAutoplay();
+        });
+      }
+
+      // Pause autoplay on mouse hover / touch (tablets showing desktop layout)
+      if (slideshowContainer) {
+        slideshowContainer.addEventListener('mouseenter', stopAutoplay);
+        slideshowContainer.addEventListener('mouseleave', startAutoplay);
+        // Touch equivalents: pause on tap, resume when finger lifts
+        slideshowContainer.addEventListener('touchstart', stopAutoplay, { passive: true });
+        slideshowContainer.addEventListener('touchend', startAutoplay, { passive: true });
+      }
+
+      // Initialize
+      showSlide(0);
+      startAutoplay();
+    })();
+  </script>
+
+  <!-- ── Mobile Slideshow Controller ────────────────────────── -->
+  <script>
+    (function () {
+      const slides = document.querySelectorAll('.mobile-slide');
+      const dots = document.querySelectorAll('.mobile-dot');
+      const prevBtn = document.getElementById('mobile-prev-btn');
+      const nextBtn = document.getElementById('mobile-next-btn');
+
+      if (!slides.length) return;
+
+      let currentIndex = 0;
+      let autoplayTimer = null;
+      const AUTOPLAY_INTERVAL = 3500; // 3.5 seconds
+
+      function showSlide(index) {
+        if (index >= slides.length) index = 0;
+        if (index < 0) index = slides.length - 1;
+
+        currentIndex = index;
+
+        // Crossfade slides
+        slides.forEach((slide, idx) => {
+          if (idx === currentIndex) {
+            slide.classList.remove('opacity-0', 'z-0');
+            slide.classList.add('opacity-100', 'z-10');
+          } else {
+            slide.classList.remove('opacity-100', 'z-10');
+            slide.classList.add('opacity-0', 'z-0');
+          }
+        });
+
+        // Update dots styling
+        dots.forEach((dot, idx) => {
+          if (idx === currentIndex) {
+            dot.classList.remove('bg-neutral-800/30');
+            dot.classList.add('bg-neutral-800');
+          } else {
+            dot.classList.remove('bg-neutral-800');
+            dot.classList.add('bg-neutral-800/30');
+          }
+        });
+      }
+
+      function startAutoplay() {
+        stopAutoplay();
+        autoplayTimer = setInterval(() => {
+          showSlide(currentIndex + 1);
+        }, AUTOPLAY_INTERVAL);
+      }
+
+      function stopAutoplay() {
+        if (autoplayTimer) {
+          clearInterval(autoplayTimer);
+          autoplayTimer = null;
+        }
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          showSlide(currentIndex + 1);
+          startAutoplay();
+        });
+      }
+
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          showSlide(currentIndex - 1);
+          startAutoplay();
+        });
+      }
+
+      dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+          showSlide(index);
+          startAutoplay();
+        });
+      });
+
+      // Swipe Gestures for Mobile
+      let touchStartX = 0;
+      let touchEndX = 0;
+      const viewport = document.getElementById('mobile-slideshow-viewport');
+
+      if (viewport) {
+        viewport.addEventListener('touchstart', (e) => {
+          touchStartX = e.changedTouches[0].clientX; // clientX = CSS px, consistent on all DPI
+        }, { passive: true });
+
+        viewport.addEventListener('touchend', (e) => {
+          touchEndX = e.changedTouches[0].clientX;
+          const diffX = touchEndX - touchStartX;
+          if (Math.abs(diffX) > 50) {
+            if (diffX > 0) {
+              showSlide(currentIndex - 1);
+            } else {
+              showSlide(currentIndex + 1);
+            }
+            startAutoplay();
+          }
+        }, { passive: true });
+      }
+
+      // Initialize
+      showSlide(0);
+      startAutoplay();
+    })();
+  </script>
+
+  <!-- ── Custom Cursor Controller ───────────────────────────── -->
+  <script>
+    (function () {
+      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+      const cursor = document.getElementById('custom-cursor');
+      if (!cursor) return;
+
+      // Add fallback class so CSS knows the custom cursor initialized successfully
+      document.body.classList.add('has-custom-cursor');
+
+      // Hotspot offset — arrow tip at ~18% x, ~15% y of the 22px box
+      const TIP_X = 22 * 0.18;
+      const TIP_Y = 22 * 0.15;
+
+      // Direct 1:1 tracking — no lerp, no delay
+      window.addEventListener('mousemove', (e) => {
+        cursor.style.transform = `translate3d(${e.clientX - TIP_X}px, ${e.clientY - TIP_Y}px, 0)`;
+        if (cursor.style.opacity !== '1') cursor.style.opacity = '1';
+      }, { passive: true });
+
+      document.addEventListener('mouseleave', () => { cursor.style.opacity = '0'; });
+      document.addEventListener('mouseenter', () => { cursor.style.opacity = '1'; });
+
+      // Hover state
+      const INTERACTIVE = 'a, button, [role="button"], input, textarea, select, label, [tabindex]';
+      document.addEventListener('mouseover', (e) => {
+        if (e.target.closest(INTERACTIVE)) cursor.classList.add('is-hovering');
+      }, { passive: true });
+      document.addEventListener('mouseout', (e) => {
+        if (e.target.closest(INTERACTIVE)) cursor.classList.remove('is-hovering');
+      }, { passive: true });
+
+      // Click state
+      window.addEventListener('mousedown', () => {
+        cursor.classList.remove('is-hovering');
+        cursor.classList.add('is-clicking');
+      });
+      window.addEventListener('mouseup', () => { cursor.classList.remove('is-clicking'); });
+    })();
+  </script>
+
+  <!-- ── RGB Glow Controller ────────────────────────────────── -->
+  <script>
+    (function () {
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const border = document.getElementById('download-button-rgb-border');
+          const glow = document.getElementById('download-button-rgb-glow');
+          if (border) border.classList.add('rgb-border-active');
+          if (glow) glow.classList.add('rgb-glow-active');
+        }, 800); // Premium progressive fade-in 800ms after load complete
+      });
+    })();
+  </script>
+
+</body>
+
+</html>

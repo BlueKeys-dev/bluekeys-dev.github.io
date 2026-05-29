@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Features | BlueKeys</title>
+    <link rel="icon" type="image/x-icon" href="assets/logo/logo%20.ico" />
+
+    <!-- Tailwind CSS (for layout utilities and forms) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- Tailwind Config (harmonized with welcome page) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#6dcdf9",
+                        secondary: "#6dcdf9",
+                        accent: "#6dcdf9",
+                        surface: "#FAF9F6",
+                        "on-surface": "#1a1a1a",
+                        "surface-container-low": "hsla(197, 60%, 93%, 0.4)",
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.125rem",
+                        lg: "0.25rem",
+                        xl: "0.5rem",
+                        full: "0.75rem",
+                    },
+                    fontFamily: {
+                        headline: ["Manrope", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;800&family=Inter:wght@300;400;500;700&display=swap"
+        rel="stylesheet" />
+
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+
+    <!-- App Styles & Scripts -->
+    <link rel="stylesheet" href="css/features.css" />
+    <script defer src="js/features.js"></script>
+    <script defer src="js/bg-shader.js"></script>
+</head>
+
+<body class="antialiased selection:bg-[#dae5e1] selection:text-[#2a3432]">
+    <canvas id="shader-canvas" class="fixed inset-0 w-full h-full z-[-1] pointer-events-none opacity-50"></canvas>
+
+    <!-- Dynamic Ambient Glow Base for Visual Depth -->
+    <div class="ambient-orb ambient-orb--top"></div>
+    <div class="ambient-orb ambient-orb--center"></div>
+    <div class="ambient-orb ambient-orb--bottom"></div>
+
+    <!-- Minimal Back Navigation -->
+    <a href="index.html" class="back-nav">
+        <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+
+    <!-- Hero Section with Tesla-Style Scroll Text Reveal -->
+    <header class="features-hero">
+        <span class="hero-eyebrow" data-reveal="fade-up">Explore the Ecosystem</span>
+        <p class="hero-subtitle" data-reveal="fade-in">
+           <b>Control computers from smartphone</b> 
+        </p>
+        <p class="hero-subtitle" data-reveal="fade-in" >simeless, precise, and reliably</p>
+    </header>
+
+    <!-- Core Feature Section: Advanced Bento Grid -->
+    <main class="features-section">
+        <div class="bento-grid">
+
+            <!-- 1. Responsive Touchpad -->
+            <div class="feature-card card--wide" data-reveal="fade-up" data-delay="1">
+                <div class="z-10 w-full md:w-1/2 relative">
+                    <span class="material-symbols-outlined card-icon">touchpad_mouse</span>
+                    <h3 class="card-title pb-[13rem]">Responsive Touchpad</h3>
+                    <p class="card-description">
+                        <b>Turn your phone into a smooth, responsive trackpad for precise, seamless control.</b>
+                    </p>
+                </div>
+                <div class="card-visual">
+                    <img src="light/trackpad.jpg" alt="Minimalist Trackpad UI" loading="lazy" decoding="async">
+                </div>
+            </div>
+
+            <!-- 2. TrackPoint -->
+            <div class="feature-card" data-reveal="fade-up" data-delay="2">
+                <div class="relative z-10">
+                    <span
+                        class="material-symbols-outlined card-icon text-red-500 icon-trackpoint">radio_button_checked</span>
+                    <h3 class="card-title">TrackPoint</h3>
+                    <p class="card-description">
+                        A precise, minimalist pointer inspired by classic keyboard design. Engineered for absolute
+                        pixel-perfect accuracy.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 3. Transcendent Shortcuts -->
+            <div class="feature-card" data-reveal="fade-up" data-delay="5">
+                <span class="material-symbols-outlined card-icon icon-lift-fill">bolt</span>
+                <h3 class="card-title">Smart Shortcuts</h3>
+                <p class="card-description">
+                    Create custom macros and shortcuts, stringing complex commands into single taps to rapidly boost
+                    your productivity.
+                </p>
+            </div>
+
+            <!-- 4. Smart Keyboard Modes -->
+            <div class="feature-card card--wide" data-reveal="fade-up" data-delay="4">
+                <div class="z-10 w-full md:w-3/5 relative">
+                    <span class="material-symbols-outlined card-icon">keyboard</span>
+                    <h3 class="card-title">Keyboard Modes</h3>
+                    <p class="card-description">
+                       Type comfortably with layouts that adapt instantly to any orientation—portrait or landscape—without interrupting your workflow.
+                </div>
+                <div class="card-visual" style="bottom: -5%; rotate: -8deg; opacity: 0.25;">
+                    <img src="light/landscape keybaord.png" alt="Landscape Keyboard Interface" loading="lazy" decoding="async">
+                </div>
+            </div>
+
+
+            <!-- 5. Media Widget -->
+            <div class="feature-card" data-reveal="fade-up" data-delay="3">
+                <div class="relative z-10">
+                    <span class="material-symbols-outlined card-icon icon-widget-glide">widgets</span>
+                    <h3 class="card-title">Media Widget</h3>
+                    <p class="card-description">
+                        Essential controls, always within reach. Access playback commands directly from your home
+                        screen.
+                    </p>
+                </div>
+                <!-- Aesthetic overlay for visual interest without distraction -->
+                <div class="card-visual" style="bottom: 15%;  right: -10%; width: 65%; opacity: 0.7;">
+                    <img src="light/widget.png" alt="Media Widget Component"
+                        style="border-radius: 0px; transform: rotate(-5deg);" loading="lazy" decoding="async">
+                </div>
+            </div>
+
+
+            <!-- 6. Media & Presentation Control -->
+            <div class="feature-card flex flex-col justify-between" data-reveal="fade-up" data-delay="6">
+                <div>
+                    <h3 class="card-title">Media control</h3>
+                    <p class="card-description">
+                        Navigate presentations and playback precisely without breaking your flow or leaving your
+                        audience's gaze.
+                    </p>
+                </div>
+                <div class="media-controls mt-6">
+                    <span class="material-symbols-outlined">skip_previous</span>
+                    <span class="material-symbols-outlined play-btn">play_circle</span>
+                    <span class="material-symbols-outlined">skip_next</span>
+                </div>
+            </div>
+
+            <!-- 7. Personalized Settings -->
+            <div class="feature-card" data-reveal="fade-up" data-delay="7">
+                <span class="material-symbols-outlined card-icon icon-lift-fill">tune</span>
+                <h3 class="card-title">Personalized Setup</h3>
+                <p class="card-description">
+                    Fine-tune pointer speed, scroll acceleration, and click sensitivity to perfectly match your unique
+                    tactile style.
+                </p>
+            </div>
+
+            <!-- 8. Bluetooth File Sharing -->
+            <div class="feature-card" data-reveal="fade-up" data-delay="8">
+                <div class="relative z-10">
+                    <span class="material-symbols-outlined card-icon icon-lift-fill">folder_shared</span>
+                    <h3 class="card-title">File Sharing</h3>
+                    <div class="mb-6 flex justify-center">
+                        <div class="sync-ring">
+                            <div class="sync-ring__pulse"></div>
+                            <span class="material-symbols-outlined sync-icon">sync_alt</span>
+                        </div>
+                    </div>
+                    <p class="card-description">
+                        Quickly beam files seamlessly between your devices without internet reliance or cloud hassle.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- 9. Clipboard Sync -->
+            <div class="feature-card" data-reveal="fade-up" data-delay="9">
+                <div class="relative z-10">
+                    <span class="material-symbols-outlined card-icon icon-clipboard-tap">content_copy</span>
+                    <h3 class="card-title">Clipboard Sync</h3>
+                    <p class="card-description">
+                        Copy text on phone and paste it on PC across the workspace.
+                    </p>
+                </div>
+                <div class="card-background-visual card-background--clipboard" style="rotate: -12%; bottom: 10%; right: -10%; opacity: 0.7;">
+                    <img src="light/clipbaord copy.png" alt="Clipboard Sync Activity UI" loading="lazy" decoding="async">
+                </div>
+            </div>
+
+            <!-- 10. Seamless Connection -->
+            <div class="feature-card" data-reveal="fade-up" data-delay="10">
+                <span
+                    class="material-symbols-outlined card-icon text-blue-500 icon-lift-fill">bluetooth_connected</span>
+                <h3 class="card-title">Seamless Connect</h3>
+                <p class="card-description">
+                    Fast, low latency Bluetooth pairing every single time. Your setup reconnects instantly
+                    directly upon proximity.
+                </p>
+            </div>
+
+
+        </div>
+    </main>
+
+    <!-- Subtle Separation Divider -->
+    <div class="max-w-5xl mx-auto px-6 mb-16" data-reveal="fade-in">
+        <div class="border-t border-black/10"></div>
+    </div>
+
+    <!-- Feedback Section -->
+    <section class="max-w-lg mx-auto px-6 pb-24" data-reveal="fade-up">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <span class="text-xs font-bold tracking-[0.25em] uppercase text-primary/40 block mb-2">We Value Your Input</span>
+            <h2 class="font-headline font-extrabold text-3xl md:text-4xl text-primary tracking-tight">
+                Send Feedback
+            </h2>
+            <p class="mt-2 text-primary/60 font-light leading-relaxed text-sm">
+                Have an idea, bug report, or experience to share? Let us know!
+            </p>
+        </div>
+
+        <!-- Global success banner -->
+        <div data-fs-success
+          class="hidden mb-6 flex items-center gap-3 bg-[#8ecae6]/20 border border-[#8ecae6]/40 text-primary rounded-xl px-5 py-4 text-sm font-medium">
+          <span class="material-symbols-outlined text-[20px] text-secondary">check_circle</span>
+          <span>Thanks for your feedback!</span>
+        </div>
+
+        <!-- Global error banner -->
+        <div data-fs-error
+          class="hidden mb-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-5 py-4 text-sm font-medium">
+          <span class="material-symbols-outlined text-[20px]">error</span>
+          <span>Something went wrong. Please try again.</span>
+        </div>
+
+        <!-- Form -->
+        <form id="feedback-form" class="space-y-4" action="https://formspree.io/f/mzdwrapv" method="POST" novalidate>
+
+          <!-- Name -->
+          <div>
+            <label for="name" class="block text-xs font-bold tracking-widest uppercase text-primary/50 mb-2">Name</label>
+            <input type="text" id="name" name="name" data-fs-field required placeholder="Your name"
+              class="w-full bg-white/70 border border-black/10 rounded-xl px-4 py-2.5 text-sm text-primary placeholder-primary/30 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all aria-invalid:border-red-400 aria-invalid:ring-red-200" />
+            <span data-fs-error="name" class="mt-1.5 block text-xs text-red-500 font-medium"></span>
+          </div>
+      
+          <!-- Reaction Emoji Rating -->
+          <div>
+            <label class="block text-xs font-bold tracking-widest uppercase text-primary/50 mb-2">How's your experience?</label>
+            <div class="flex items-center justify-between gap-1">
+              <input type="hidden" id="feeling" name="feeling" value="" data-fs-field />
+
+              <button type="button" data-emoji="sad"
+                class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
+                title="Sad">
+                <span class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">😢</span>
+                <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Sad</span>
+              </button>
+
+              <button type="button" data-emoji="meh"
+                class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
+                title="Meh">
+                <span class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">😕</span>
+                <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Meh</span>
+              </button>
+
+              <button type="button" data-emoji="ok"
+                class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
+                title="Okay">
+                <span class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">😐</span>
+                <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Okay</span>
+              </button>
+
+              <button type="button" data-emoji="good"
+                class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
+                title="Good">
+                <span class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">🙂</span>
+                <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Good</span>
+              </button>
+
+              <button type="button" data-emoji="love"
+                class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
+                title="Amazing">
+                <span class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">😄</span>
+                <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Amazing</span>
+              </button>
+            </div>
+            <span data-fs-error="feeling" class="mt-1.5 block text-xs text-red-500 font-medium"></span>
+          </div>
+
+          <!-- Message -->
+          <div>
+            <label for="message" class="block text-xs font-bold tracking-widest uppercase text-primary/50 mb-2">Feedback</label>
+            <!-- Category Selection Cards -->
+            <div class="mb-4">
+              <input type="hidden" id="category" name="category" value="" data-fs-field />
+              <div class="grid grid-cols-4 gap-1.5 sm:gap-3">
+                <!-- Bug Report Card -->
+                <button type="button" data-category="Bug Report"
+                  class="category-card flex items-center justify-center py-1.5 px-3 sm:py-2 sm:px-5 bg-white/70 border border-black/10 rounded-lg hover:bg-black/5 active:scale-[0.98] transition-all w-full">
+                  <span class="text-[10px] sm:text-xs font-bold text-primary/80 uppercase tracking-wider truncate">Bug</span>
+                </button>
+
+                <!-- Add Feature Card -->
+                <button type="button" data-category="Add Feature"
+                  class="category-card flex items-center justify-center py-1.5 px-3 sm:py-2 sm:px-5 bg-white/70 border border-black/10 rounded-lg hover:bg-black/5 active:scale-[0.98] transition-all w-full">
+                  <span class="text-[10px] sm:text-xs font-bold text-primary/80 uppercase tracking-wider truncate">Feature</span>
+                </button>
+
+                <!-- Error Card -->
+                <button type="button" data-category="Error"
+                  class="category-card flex items-center justify-center py-1.5 px-3 sm:py-2 sm:px-5 bg-white/70 border border-black/10 rounded-lg hover:bg-black/5 active:scale-[0.98] transition-all w-full">
+                  <span class="text-[10px] sm:text-xs font-bold text-primary/80 uppercase tracking-wider truncate">Crash
+                    Report</span>
+                </button>
+
+                <!-- Other Card -->
+                <button type="button" data-category="Other"
+                  class="category-card flex items-center justify-center py-1.5 px-3 sm:py-2 sm:px-5 bg-white/70 border border-black/10 rounded-lg hover:bg-black/5 active:scale-[0.98] transition-all w-full">
+                  <span class="text-[10px] sm:text-xs font-bold text-primary/80 uppercase tracking-wider truncate">Other</span>
+                </button>
+              </div>
+              <span data-fs-error="category" class="mt-1.5 block text-xs text-red-500 font-medium"></span>
+            </div>
+
+            <textarea id="message" name="message" data-fs-field required rows="6"
+              placeholder="Tell us what's on your mind…"
+              class="w-full bg-white/70 border border-black/10 rounded-xl px-4 py-2.5 text-sm text-primary placeholder-primary/30 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all resize-none aria-invalid:border-red-400 aria-invalid:ring-red-200"></textarea>
+            <span data-fs-error="message" class="mt-1.5 block text-xs text-red-500 font-medium"></span>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" id="submit-btn" data-fs-submit-btn
+            class="relative group w-full overflow-hidden bg-primary text-white px-8 py-3 text-sm font-bold tracking-[0.2em] uppercase rounded-full transition-all duration-500 btn-shadow hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0">
+            <span class="relative z-10 flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">send</span>
+              SEND Feedback
+            </span>
+            <div class="absolute inset-0 bg-gradient-to-r from-neutral-800 to-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+            </div>
+          </button>
+
+        </form>
+    </section>
+
+    <!-- Premium Minimal Footer -->
+    <footer class="features-footer" data-reveal="fade-in">
+        <p>© 2026 BlueKeys. Engineered for Nothing.</p>
+        <p class="mt-2"><a href="privacy.html" class="text-[10px] sm:text-xs font-semibold tracking-[0.15em] uppercase text-neutral-800/40 hover:text-neutral-800 transition-colors">Privacy Policy</a></p>
+    </footer>
+
+</body>
+
+</html>

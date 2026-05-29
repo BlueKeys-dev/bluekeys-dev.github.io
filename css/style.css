@@ -1,0 +1,365 @@
+      /* Prevent horizontal scrollbar on all browsers */
+      html,
+      body {
+        overflow-x: hidden;
+        max-width: 100vw;
+      }
+
+      /* Hide the OS cursor site-wide ONLY if the custom cursor script activates */
+      @media (hover: hover) and (pointer: fine) {
+
+        body.has-custom-cursor,
+        body.has-custom-cursor *,
+        body.has-custom-cursor *::before,
+        body.has-custom-cursor *::after {
+          cursor: none !important;
+        }
+      }
+
+      #custom-cursor {
+        /* Hidden on touch/mobile — only shown on pointer devices */
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 22px;
+        height: 22px;
+        pointer-events: none;
+        z-index: 99999;
+        will-change: transform;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        perspective: 1000px;
+        transition:
+          opacity 0.15s ease;
+        opacity: 0;
+        /* invisible until first mouse move */
+      }
+
+      #custom-cursor img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        /* 20° clockwise brings the SVG arrow tip to standard cursor angle */
+        transform: rotate(20deg);
+        transform-origin: 18% 15%;
+        /* pivot at the arrow tip */
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+        will-change: transform, filter;
+        /* smooth scale + filter transitions for hover/click states */
+        transition:
+          transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+          filter 0.16s ease;
+      }
+
+      /* Hover state — scale up, keep the rotation */
+      #custom-cursor.is-hovering img {
+        transform: rotate(20deg) scale(1.18);
+        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.22));
+      }
+
+      /* Click/press state — scale down, keep the rotation */
+      #custom-cursor.is-clicking img {
+        transform: rotate(20deg) scale(0.88);
+        filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.14));
+      }
+
+      /* Only show on devices with a fine pointer (mouse/trackpad) */
+      @media (hover: hover) and (pointer: fine) {
+        #custom-cursor {
+          display: block;
+        }
+      }
+
+      * {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+
+      body {
+        background-color: #f5f5f7bc;
+        background-image:
+          radial-gradient(at 0% 0%, rgba(142, 202, 230, 0.12) 0px, transparent 50%),
+          radial-gradient(at 100% 100%, rgba(142, 202, 230, 0.08) 0px, transparent 50%);
+      }
+
+      .btn-shadow {
+        box-shadow:
+          0 10px 15px -3px rgba(179, 175, 175, 0.488),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+
+      /* ---- Shader Background ---- */
+      #shader-bg {
+        position: absolute;
+        inset: 0;
+        z-index: -5;
+        overflow: hidden;
+        pointer-events: none;
+        /* CSS-only fallback gradient — always visible even if images fail */
+        background: radial-gradient(ellipse 80% 60% at 50% 30%,
+            rgba(142, 202, 230, 0.12) 0%,
+            transparent 70%);
+      }
+
+      /* Shared rules for both image and video shader layers */
+      .shader-bg-img,
+      .shader-bg-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        /* Cover the container, anchored to the very top so both assets
+           show the same region — critical for an undetectable crossfade.
+           Image is 1312×3232 (1:2.46), video is 720×1280 (9:16).
+           Both cover-fill from the top, so the hero zone always matches. */
+        object-fit: cover;
+        object-position: top center;
+        opacity: 0;
+        /* Identical transition on both — makes the overlap seamless.
+           Using an ultra-smooth 1.8s cinematic ease-in-out for a buttery feel. */
+        transition: opacity 1.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+        filter: contrast(1.3) brightness(1.05);
+        /* Vignette fade toward bottom */
+        mask-image: linear-gradient(to bottom,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 0.85) 35%,
+            rgba(0, 0, 0, 0.35) 70%,
+            transparent 100%);
+        -webkit-mask-image: linear-gradient(to bottom,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 0.85) 35%,
+            rgba(0, 0, 0, 0.35) 70%,
+            transparent 100%);
+        transform: translateZ(0);
+        /* promote to own GPU layer */
+        will-change: opacity;
+        pointer-events: none;
+      }
+
+      /* Loaded / active state — same target opacity on both */
+      .shader-bg-img.is-loaded,
+      .shader-bg-video.is-loaded {
+        opacity: 0.60;
+      }
+
+      /* Mobile & Tablet: guarantee that the assets always span exactly 100% of the 
+         screen width, so the left/right corners are never cropped on tall screens. */
+      @media (max-width: 1024px) {
+
+        .shader-bg-img,
+        .shader-bg-video,
+        #shader-transition-canvas {
+          width: 100%;
+          height: auto;
+          object-fit: unset;
+        }
+
+        /* Nudge the image slightly UP so its visual content matches the video perfectly.
+           Adjust this percentage if it needs to move more or less. */
+        .shader-bg-img {
+          transform: translateY(-11.5%) translateZ(0);
+        }
+      }
+
+      #shader-transition-canvas {
+        display: none;
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.70;
+        pointer-events: none;
+        mask-image: linear-gradient(to bottom,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 0.85) 35%,
+            rgba(0, 0, 0, 0.35) 70%,
+            transparent 100%);
+        -webkit-mask-image: linear-gradient(to bottom,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 0.85) 35%,
+            rgba(0, 0, 0, 0.35) 70%,
+            transparent 100%);
+      }
+
+      /* Premium Scroll Architecture (Natural Desktop & Freewheel Momentum) */
+      @media (min-width: 1024px) {
+
+        html,
+        body {
+          margin: 0;
+          padding: 0;
+        }
+
+        .snap-section {
+          min-height: 100vh;
+          min-height: 100dvh;
+          position: relative;
+        }
+
+        #features-section-container {
+          height: auto;
+          min-height: 100vh;
+          min-height: 100dvh;
+          overflow-y: visible;
+        }
+
+      }
+
+      /* ---- Glassmorphic Mouse Floating & Pulse Animations ---- */
+      .img-float {
+        animation: float-animation 6s ease-in-out infinite;
+      }
+
+      @keyframes float-animation {
+
+        0%,
+        100% {
+          transform: translateY(0) scale(1);
+        }
+
+        50% {
+          transform: translateY(-12px) scale(1.02);
+        }
+      }
+
+      .animate-pulse-slow {
+        animation: pulse-slow 8s ease-in-out infinite;
+      }
+
+      @keyframes pulse-slow {
+
+        0%,
+        100% {
+          opacity: 0.4;
+          transform: scale(1);
+        }
+
+        50% {
+          opacity: 0.8;
+          transform: scale(1.12);
+        }
+      }
+
+      /* ── Optimization Utilities ────────────────────────────────── */
+      .backface-hidden {
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+      }
+
+      /* ── Premium Independent Device Floating Animations ────────── */
+      .float-y-3 {
+        animation: float-y-1-anim 6s ease-in-out infinite;
+      }
+
+      .float-y-1 {
+        animation: float-y-2-anim 7s ease-in-out infinite;
+      }
+
+      .float-y-2 {
+        animation: float-y-3-anim 8s ease-in-out infinite;
+      }
+
+      @keyframes float-y-2-anim {
+
+        0%,
+        100% {
+          transform: translateY(0) translateZ(0);
+        }
+
+        50% {
+          transform: translateY(-7px) translateZ(0);
+        }
+      }
+
+      @keyframes float-y-1-anim {
+
+        0%,
+        100% {
+          transform: translateY(0) translateZ(0);
+        }
+
+        50% {
+          transform: translateY(-12px) translateZ(0);
+        }
+      }
+
+      @keyframes float-y-3-anim {
+
+        0%,
+        100% {
+          transform: translateY(0) translateZ(0);
+        }
+
+        50% {
+          transform: translateY(-10px) translateZ(0);
+        }
+      }
+
+      /* ── Premium Twilight Aurora Backlight & Border Styles ────── */
+      .rgb-glow-active {
+        opacity: 0.35 !important;
+      }
+
+      .rgb-border-active {
+        opacity: 0.9 !important;
+      }
+
+      /* Curated twilight-indigo-rose palette with zero green/yellow cheap hues */
+      .animate-rgb-flow {
+        background: linear-gradient(135deg,
+            #8ecae6 0%,
+            /* Brand BlueKeys Blue */
+            #4361ee 25%,
+            /* Sleek Electric Blue */
+            #7209b7 50%,
+            /* Deep Luxury Violet */
+            #253ef7 75%,
+            /* Twilight Rose */
+            #196aff 100%);
+        background-size: 300% 300%;
+        animation: twilight-drift 12s ease infinite;
+      }
+
+      /* Slow, liquid-like drifting transition for high-end feel */
+      @keyframes twilight-drift {
+        0% {
+          background-position: 0% 50%;
+        }
+
+        50% {
+          background-position: 100% 50%;
+        }
+
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      /* Soft ambient breathe to add premium volumetric aura depth */
+      #download-button-rgb-glow.rgb-glow-active {
+        animation: twilight-drift 12s ease infinite, twilight-breathe 8s ease-in-out infinite;
+      }
+
+      @keyframes twilight-breathe {
+
+        0%,
+        100% {
+          transform: scale(0.97) translateZ(0);
+          opacity: 0.28;
+        }
+
+        50% {
+          transform: scale(1.05) translateZ(0);
+          opacity: 0.40;
+        }
+      }
