@@ -193,20 +193,24 @@
 
             </div>
 
-            <!-- 9. Clipboard Sync -->
-            <div class="feature-card" data-reveal="fade-up" data-delay="9">
-                <div class="relative z-10">
-                    <span class="material-symbols-outlined card-icon icon-clipboard-tap">content_copy</span>
-                    <h3 class="card-title">Clipboard Sync</h3>
-                    <p class="card-description">
-                        Copy text on phone and paste it on PC across the workspace.
-                    </p>
-                </div>
-                <div class="card-background-visual card-background--clipboard" style="rotate: -12%; bottom: 10%; right: -10%; opacity: 0.7;">
-                    <img src="light/clipbaord copy.png" alt="Clipboard Sync Activity UI" loading="lazy" decoding="async">
-                </div>
-            </div>
+<!-- 9. Clipboard Sync -->
+<div class="feature-card" data-reveal="fade-up" data-delay="9">
+    <div class="relative z-10 flex flex-col items-start gap-4 ">
 
+        <span class="material-symbols-outlined card-icon icon-clipboard-tap text-5xl">
+            content_copy
+        </span>
+
+        <h3 class="card-title m-0">
+            Clipboard Sync
+        </h3>
+
+        <p class="card-description m-0">
+            Copy text on phone and paste it on PC across the workspace.
+        </p>
+
+    </div>
+</div>
             <!-- 10. Seamless Connection -->
             <div class="feature-card" data-reveal="fade-up" data-delay="10">
                 <span
@@ -221,155 +225,5 @@
 
         </div>
     </main>
-
-    <!-- Subtle Separation Divider -->
-    <div class="max-w-5xl mx-auto px-6 mb-16" data-reveal="fade-in">
-        <div class="border-t border-black/10"></div>
-    </div>
-
-    <!-- Feedback Section -->
-    <section class="max-w-lg mx-auto px-6 pb-24" data-reveal="fade-up">
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <span class="text-xs font-bold tracking-[0.25em] uppercase text-primary/40 block mb-2">We Value Your Input</span>
-            <h2 class="font-headline font-extrabold text-3xl md:text-4xl text-primary tracking-tight">
-                Send Feedback
-            </h2>
-            <p class="mt-2 text-primary/60 font-light leading-relaxed text-sm">
-                Have an idea, bug report, or experience to share? Let us know!
-            </p>
-        </div>
-
-        <!-- Global success banner -->
-        <div data-fs-success
-          class="hidden mb-6 flex items-center gap-3 bg-[#8ecae6]/20 border border-[#8ecae6]/40 text-primary rounded-xl px-5 py-4 text-sm font-medium">
-          <span class="material-symbols-outlined text-[20px] text-secondary">check_circle</span>
-          <span>Thanks for your feedback!</span>
-        </div>
-
-        <!-- Global error banner -->
-        <div data-fs-error
-          class="hidden mb-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-5 py-4 text-sm font-medium">
-          <span class="material-symbols-outlined text-[20px]">error</span>
-          <span>Something went wrong. Please try again.</span>
-        </div>
-
-        <!-- Form -->
-        <form id="feedback-form" class="space-y-4" action="https://formspree.io/f/mzdwrapv" method="POST" novalidate>
-
-          <!-- Name -->
-          <div>
-            <label for="name" class="block text-xs font-bold tracking-widest uppercase text-primary/50 mb-2">Name</label>
-            <input type="text" id="name" name="name" data-fs-field required placeholder="Your name"
-              class="w-full bg-white/70 border border-black/10 rounded-xl px-4 py-2.5 text-sm text-primary placeholder-primary/30 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all aria-invalid:border-red-400 aria-invalid:ring-red-200" />
-            <span data-fs-error="name" class="mt-1.5 block text-xs text-red-500 font-medium"></span>
-          </div>
-      
-          <!-- Reaction Emoji Rating -->
-          <div>
-            <label class="block text-xs font-bold tracking-widest uppercase text-primary/50 mb-2">How's your experience?</label>
-            <div class="flex items-center justify-between gap-1">
-              <input type="hidden" id="feeling" name="feeling" value="" data-fs-field />
-
-              <button type="button" data-emoji="sad"
-                class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
-                title="Sad">
-                <span class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">😢</span>
-                <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Sad</span>
-              </button>
-
-              <button type="button" data-emoji="meh"
-                class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
-                title="Meh">
-                <span class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">😕</span>
-                <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Meh</span>
-              </button>
-
-              <button type="button" data-emoji="ok"
-                class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
-                title="Okay">
-                <span class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">😐</span>
-                <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Okay</span>
-              </button>
-
-              <button type="button" data-emoji="good"
-                class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
-                title="Good">
-                <span class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">🙂</span>
-                <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Good</span>
-              </button>
-
-              <button type="button" data-emoji="love"
-                class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
-                title="Amazing">
-                <span class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">😄</span>
-                <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Amazing</span>
-              </button>
-            </div>
-            <span data-fs-error="feeling" class="mt-1.5 block text-xs text-red-500 font-medium"></span>
-          </div>
-
-          <!-- Message -->
-          <div>
-            <label for="message" class="block text-xs font-bold tracking-widest uppercase text-primary/50 mb-2">Feedback</label>
-            <!-- Category Selection Cards -->
-            <div class="mb-4">
-              <input type="hidden" id="category" name="category" value="" data-fs-field />
-              <div class="grid grid-cols-4 gap-1.5 sm:gap-3">
-                <!-- Bug Report Card -->
-                <button type="button" data-category="Bug Report"
-                  class="category-card flex items-center justify-center py-1.5 px-3 sm:py-2 sm:px-5 bg-white/70 border border-black/10 rounded-lg hover:bg-black/5 active:scale-[0.98] transition-all w-full">
-                  <span class="text-[10px] sm:text-xs font-bold text-primary/80 uppercase tracking-wider truncate">Bug</span>
-                </button>
-
-                <!-- Add Feature Card -->
-                <button type="button" data-category="Add Feature"
-                  class="category-card flex items-center justify-center py-1.5 px-3 sm:py-2 sm:px-5 bg-white/70 border border-black/10 rounded-lg hover:bg-black/5 active:scale-[0.98] transition-all w-full">
-                  <span class="text-[10px] sm:text-xs font-bold text-primary/80 uppercase tracking-wider truncate">Feature</span>
-                </button>
-
-                <!-- Error Card -->
-                <button type="button" data-category="Error"
-                  class="category-card flex items-center justify-center py-1.5 px-3 sm:py-2 sm:px-5 bg-white/70 border border-black/10 rounded-lg hover:bg-black/5 active:scale-[0.98] transition-all w-full">
-                  <span class="text-[10px] sm:text-xs font-bold text-primary/80 uppercase tracking-wider truncate">Crash
-                    Report</span>
-                </button>
-
-                <!-- Other Card -->
-                <button type="button" data-category="Other"
-                  class="category-card flex items-center justify-center py-1.5 px-3 sm:py-2 sm:px-5 bg-white/70 border border-black/10 rounded-lg hover:bg-black/5 active:scale-[0.98] transition-all w-full">
-                  <span class="text-[10px] sm:text-xs font-bold text-primary/80 uppercase tracking-wider truncate">Other</span>
-                </button>
-              </div>
-              <span data-fs-error="category" class="mt-1.5 block text-xs text-red-500 font-medium"></span>
-            </div>
-
-            <textarea id="message" name="message" data-fs-field required rows="6"
-              placeholder="Tell us what's on your mind…"
-              class="w-full bg-white/70 border border-black/10 rounded-xl px-4 py-2.5 text-sm text-primary placeholder-primary/30 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all resize-none aria-invalid:border-red-400 aria-invalid:ring-red-200"></textarea>
-            <span data-fs-error="message" class="mt-1.5 block text-xs text-red-500 font-medium"></span>
-          </div>
-
-          <!-- Submit -->
-          <button type="submit" id="submit-btn" data-fs-submit-btn
-            class="relative group w-full overflow-hidden bg-primary text-white px-8 py-3 text-sm font-bold tracking-[0.2em] uppercase rounded-full transition-all duration-500 btn-shadow hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0">
-            <span class="relative z-10 flex items-center justify-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">send</span>
-              SEND Feedback
-            </span>
-            <div class="absolute inset-0 bg-gradient-to-r from-neutral-800 to-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-            </div>
-          </button>
-
-        </form>
-    </section>
-
-    <!-- Premium Minimal Footer -->
-    <footer class="features-footer" data-reveal="fade-in">
-        <p>© 2026 BlueKeys. Engineered for Nothing.</p>
-        <p class="mt-2"><a href="privacy.html" class="text-[10px] sm:text-xs font-semibold tracking-[0.15em] uppercase text-neutral-800/40 hover:text-neutral-800 transition-colors">Privacy Policy</a></p>
-    </footer>
-
 </body>
-
 </html>

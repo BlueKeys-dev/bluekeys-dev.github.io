@@ -16,7 +16,7 @@ BlueKeys is an Android app that turns your device into a Bluetooth keyboard and 
 3. Permissions We Need
 To work properly, BlueKeys needs these permissions:
 - Nearby Devices / Bluetooth: To find, pair, and connect with your computers or other devices.
-- Foreground Service / Notifications: To keep the connection stable while you are using the app.
+- Foreground Service / Notifications: To keep the connection stable while you are using the app. This is used solely to maintain your active Bluetooth keyboard and mouse connection in the background so your inputs are not interrupted.
 - Bluetooth System Settings: To turn Bluetooth on when you start the app.
 
 These permissions are strictly used to make the app work. We do not use them for tracking.
@@ -32,6 +32,9 @@ These permissions are strictly used to make the app work. We do not use them for
 - Works on Android 9 and newer.
 - Connects to Windows, macOS, Linux, and Android devices.
 
+7. Children's Privacy
+- BlueKeys does not knowingly collect personal information from children under the age of 13.
+
 8. Your Responsibility
 - Only connect to devices you trust.
 - Keep your paired devices secure.
@@ -42,3 +45,6 @@ We may update this policy. Any updates will be posted on this page with a new ef
 10. Contact Us
 If you have questions, please email us at:
 to desktopio684@gmail.com
+
+11. Account and Data Deletion
+- Since BlueKeys does not require account creation and collects zero personal data, we do not store any personal information on remote servers. Consequently, no account or data deletion requests are necessary.

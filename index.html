@@ -35,7 +35,8 @@
         },
       },
     };
-  </script>  <link
+  </script>
+  <link
     href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@300;400;500&amp;display=swap"
     rel="stylesheet" />
   <link
@@ -44,6 +45,150 @@
   <script src="js/script.js" defer></script>
   <script src="js/shader-upgrade.js" defer></script>
   <link rel="stylesheet" href="css/style.css" />
+  <style data-purpose="typography">
+    .gallery-title-prefix::before {
+      content: "—";
+      margin-right: 0.5rem;
+      font-weight: 300;
+    }
+
+    .caption-text {
+      font-size: 8px;
+      letter-spacing: 0.15em;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      color: #64748b;
+      /* Slate grey / dark grey */
+      text-transform: uppercase;
+      line-height: 1;
+    }
+  </style>
+  <style data-purpose="animations">
+    @keyframes revealCard {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes zoomOutImage {
+      from {
+        transform: scale(1.08);
+      }
+
+      to {
+        transform: scale(1) translate3d(0, 0, 0);
+      }
+    }
+
+    @keyframes headerReveal {
+      from {
+        opacity: 0;
+        letter-spacing: -0.15em;
+        transform: translateY(-8px);
+      }
+
+      to {
+        opacity: 1;
+        letter-spacing: 0.2em;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes wipeRevealCurtain {
+      from {
+        transform: translateX(0);
+      }
+
+      to {
+        transform: translateX(101%);
+      }
+    }
+
+    .gallery-title {
+      opacity: 0;
+    }
+
+    .is-visible .gallery-title {
+      animation: headerReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .gallery-item:nth-child(1) .reveal-curtain,
+    .gallery-item:nth-child(1) .image-zoom {
+      animation-delay: 0.15s;
+    }
+
+    .gallery-item:nth-child(2) .reveal-curtain,
+    .gallery-item:nth-child(2) .image-zoom {
+      animation-delay: 0.25s;
+    }
+
+    .gallery-item:nth-child(3) .reveal-curtain,
+    .gallery-item:nth-child(3) .image-zoom {
+      animation-delay: 0.35s;
+    }
+
+    .gallery-item:nth-child(4) .reveal-curtain,
+    .gallery-item:nth-child(4) .image-zoom {
+      animation-delay: 0.45s;
+    }
+
+    .gallery-item:nth-child(5) .reveal-curtain,
+    .gallery-item:nth-child(5) .image-zoom {
+      animation-delay: 0.55s;
+    }
+
+    .gallery-item:nth-child(6) .reveal-curtain,
+    .gallery-item:nth-child(6) .image-zoom {
+      animation-delay: 0.65s;
+    }
+
+    .reveal-curtain {
+      position: absolute;
+      inset: 0;
+      background-color: #f5f5f7;
+      /* brand background color */
+      z-index: 20;
+      pointer-events: none;
+      border-right: 2.5px solid #8ecae6;
+      /* glowing expansion brand line */
+      box-shadow: 0 0 16px rgba(142, 202, 230, 0.55);
+      /* thin glowing neon aura */
+      will-change: transform;
+      transform: translateX(0);
+      animation-delay: inherit;
+    }
+
+    .is-visible .reveal-curtain {
+      animation: wipeRevealCurtain 1.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    .image-zoom {
+      will-change: transform;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform: scale(1.08) translate3d(0, 0, 0);
+      animation-delay: inherit;
+      transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .is-visible .image-zoom {
+      animation: zoomOutImage 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .gallery-item:hover .image-zoom {
+      transform: scale(1.02) translate3d(0, 0, 0) !important;
+    }
+
+    .overlay-gradient {
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.1) 60%, transparent 100%);
+    }
+  </style>
 </head>
 
 <body class="font-body text-on-surface antialiased overflow-x-hidden">
@@ -58,21 +203,15 @@
       <!-- Responsive Shader Background with Progressive Loading & Mobile Video -->
       <div id="shader-bg">
         <!-- Fallback image: always present, visible until video takes over on mobile -->
-        <img
-          id="shader-img"
-          src="shaders/mobile-9:16/desktop - low resolution.jpeg"
-          alt=""
-          role="presentation"
-          class="shader-bg-img"
-          decoding="async"
-        />
+        <img id="shader-img" src="shaders/mobile-9:16/desktop - low resolution.jpeg" alt="" role="presentation"
+          class="shader-bg-img" fetchpriority="high" decoding="async" />
         <canvas id="shader-transition-canvas"></canvas>
         <!-- Mobile ping-pong video layers — A and B alternate so there is
              zero gap: while A plays, B silently buffers the next clip.      -->
-        <video id="shader-video-a" class="shader-bg-video" muted playsinline
-          preload="none" aria-hidden="true" role="presentation"></video>
-        <video id="shader-video-b" class="shader-bg-video" muted playsinline
-          preload="none" aria-hidden="true" role="presentation"></video>
+        <video id="shader-video-a" class="shader-bg-video" muted playsinline autoplay preload="auto" aria-hidden="true"
+          role="presentation"></video>
+        <video id="shader-video-b" class="shader-bg-video" muted playsinline autoplay preload="auto" aria-hidden="true"
+          role="presentation"></video>
       </div>
       <script>
         (function () {
@@ -111,7 +250,7 @@
             initHighResUpgrade(img);
           } else {
             // Wait for defer script to load if necessary
-            window.addEventListener('load', function() {
+            window.addEventListener('load', function () {
               if (typeof initHighResUpgrade === 'function') {
                 initHighResUpgrade(img);
               }
@@ -129,15 +268,12 @@
                  no src change, no load(), zero black frame.
              ════════════════════════════════════════════════════ */
 
-          // Guard: mobile only
-          if (window.innerWidth > 640) return;
+          // Guard: mobile and tablet
+          if (window.innerWidth > 1024) return;
 
-          // Guard: network quality (4G only, or unknown)
+          // Relaxed network quality guard: allow 2g/3g to attempt loading fully
           var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-          if (conn && (conn.saveData ||
-              conn.effectiveType === 'slow-2g' ||
-              conn.effectiveType === '2g' ||
-              conn.effectiveType === '3g')) return;
+          if (conn && conn.saveData) return;
 
           var vidA = document.getElementById('shader-video-a');
           var vidB = document.getElementById('shader-video-b');
@@ -145,33 +281,44 @@
 
           // ——— State —————————————————————————————————————————
           // Videos ordered smallest→largest so first visible video loads fastest
-          var sequence    = ['shaders/video/mobile/2.mp4',
-                             'shaders/video/mobile/1.mp4',
-                             'shaders/video/mobile/0.mp4'];
-          var blobs       = [];      // downloaded Blob URLs, indexed by sequence
-          var seqPlaying  = 0;       // index of currently playing video in sequence
-          var slot        = 0;       // 0 = A is active, 1 = B is active
-          var T           = 1800;    // crossfade duration ms (matches CSS 1.8s)
+          var sequence = ['shaders/video/mobile/2.mp4',
+            'shaders/video/mobile/1.mp4',
+            'shaders/video/mobile/0.mp4'];
+          var blobs = [];      // downloaded Blob URLs, indexed by sequence
+          var seqPlaying = 0;       // index of currently playing video in sequence
+          var slot = 0;       // 0 = A is active, 1 = B is active
+          var T = 1800;    // crossfade duration ms (matches CSS 1.8s)
           var TIMEOUT_XHR = 15000;   // max ms for one XHR download
-          var started     = false;   // has the sequence been kicked off yet
+          var started = false;   // has the sequence been kicked off yet
 
-          function activeEl()  { return slot === 0 ? vidA : vidB; }
+          function activeEl() { return slot === 0 ? vidA : vidB; }
           function standbyEl() { return slot === 0 ? vidB : vidA; }
-          function swapSlot()  { slot = 1 - slot; }
+          function swapSlot() { slot = 1 - slot; }
 
-          // ——— Direct src downloader (same-origin, no XHR/CORS issues) ———
-          // Instead of XHR blob, we let the <video> element load the src directly.
-          // The browser handles caching and buffering natively — no blob URLs needed.
+          // ——— XHR Blob Downloader ——————————————————————————————————————
+          // We download each video as a Blob fully before playing. This ensures
+          // 100% seamless transition with ZERO buffering during playback.
           function downloadBlob(idx) {
             if (idx >= sequence.length) return;
-            // Store the raw path directly — no blob needed for same-origin video
-            blobs[idx] = sequence[idx];
-            // Immediately continue to next
-            downloadBlob(idx + 1);
-            // Kick off playback if first clip
-            if (idx === 0 && !started && img.classList.contains('is-loaded')) {
-              kickoff();
-            }
+            var req = new XMLHttpRequest();
+            req.open('GET', sequence[idx], true);
+            req.responseType = 'blob';
+            req.timeout = TIMEOUT_XHR;
+            req.onload = function () {
+              if (this.status === 200 || this.status === 0) {
+                blobs[idx] = URL.createObjectURL(this.response);
+                if (idx === 0 && !started && img.classList.contains('is-loaded')) kickoff();
+                downloadBlob(idx + 1);
+              } else {
+                blobs[idx] = null;
+                downloadBlob(idx + 1);
+              }
+            };
+            req.onerror = req.ontimeout = function () {
+              blobs[idx] = null;
+              downloadBlob(idx + 1);
+            };
+            req.send();
           }
 
           // ——— Prime a STANDBY element (invisible load + buffer) —————————
@@ -189,6 +336,7 @@
               if (!blobs[idx]) { onPrimed && onPrimed(false); return; } // download failed
 
               var sb = standbyEl();
+              sb.autoplay = false; // Prevent auto-playing in background while standby
               sb.src = blobs[idx];
               sb.addEventListener('canplay', function () {
                 sb._primed = true;
@@ -242,7 +390,36 @@
             }
           }
 
-          // Called when the active element finishes playing its clip
+          var transitioning = false;
+
+          function setupTransitionTrigger(el) {
+            transitioning = false;
+
+            function triggerNext() {
+              if (transitioning) return;
+              transitioning = true;
+              el.removeEventListener('timeupdate', onTimeUpdate);
+              el.removeEventListener('ended', onEnded);
+              onClipEnded();
+            }
+
+            function onTimeUpdate() {
+              // Trigger crossfade exactly when remaining time matches transition duration (1.8s)
+              // This prevents the video from ending and freezing before the fade completes.
+              if (el.duration && el.currentTime >= el.duration - 1.8) {
+                triggerNext();
+              }
+            }
+
+            function onEnded() {
+              triggerNext();
+            }
+
+            el.addEventListener('timeupdate', onTimeUpdate);
+            el.addEventListener('ended', onEnded, { once: true });
+          }
+
+          // Called when the active element is about to finish playing its clip
           function onClipEnded() {
             var nextSeq = seqPlaying + 1;
 
@@ -264,7 +441,11 @@
             crossfadeVideos(incoming, outgoing); // simultaneous opacity swap
 
             // Play incoming (already buffered — no load() needed)
+            incoming.autoplay = true; // Re-enable autoplay for the active video
             incoming.play().catch(function () { /* silently ignore */ });
+
+            // Setup trigger on incoming
+            setupTransitionTrigger(incoming);
 
             // After the outgoing fades out, pause and free it, then prime it
             // for the video AFTER next (if any)
@@ -273,9 +454,6 @@
               outgoing._primed = false;
               primeStandby(seqPlaying + 1); // e.g. prime clip 2 while clip 1 plays
             }, T);
-
-            // Register ended handler on the new active
-            incoming.addEventListener('ended', onClipEnded, { once: true });
           }
 
           // ——— Kickoff: plays clip 0 on active, primes clip 1 on standby ———
@@ -287,6 +465,7 @@
             if (!blobUrl) return; // clip 0 download failed, abort
 
             var act = activeEl();
+            act.autoplay = true; // Ensure active video autoplays
             act.src = blobUrl;
 
             // Guard: ensure canplay + fallback only fire once
@@ -296,7 +475,7 @@
               kickFired = true;
               playClip(act, true /*isFirst*/);
               primeStandby(1); // start buffering clip 1 into standby
-              act.addEventListener('ended', onClipEnded, { once: true });
+              setupTransitionTrigger(act);
             }
 
             act.addEventListener('canplay', doKickPlay, { once: true });
@@ -309,6 +488,14 @@
           var videoSystemStarted = false;
           function startVideoSystem() {
             if (videoSystemStarted) return;
+
+            // Guard: mobile and tablet
+            if (window.innerWidth > 1024) return;
+
+            // Relaxed network quality guard: allow 2g/3g to attempt loading fully
+            var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            if (conn && conn.saveData) return;
+
             videoSystemStarted = true;
             // Slight delay so the fallback image is painted first
             setTimeout(function () { downloadBlob(0); }, 200);
@@ -371,11 +558,17 @@
             </a>
           </div>
           <div class="pt-4 flex flex-wrap items-center justify-center gap-y-2 gap-x-3 sm:gap-x-4 opacity-40 grayscale">
-            <span class="font-headline font-bold text-[10px] sm:text-xs tracking-widest uppercase whitespace-nowrap">Media Widget</span>
+            <span
+              class="font-headline font-bold text-[10px] sm:text-xs tracking-widest uppercase whitespace-nowrap">Media
+              Widget</span>
             <span class="hidden sm:block h-4 w-px bg-current shrink-0"></span>
-            <span class="font-headline font-bold text-[10px] sm:text-xs tracking-widest uppercase whitespace-nowrap">Bluetooth share</span>
+            <span
+              class="font-headline font-bold text-[10px] sm:text-xs tracking-widest uppercase whitespace-nowrap">Bluetooth
+              share</span>
             <span class="hidden sm:block h-4 w-px bg-current shrink-0"></span>
-            <span class="font-headline font-bold text-[10px] sm:text-xs tracking-widest uppercase whitespace-nowrap">Universal OS</span>
+            <span
+              class="font-headline font-bold text-[10px] sm:text-xs tracking-widest uppercase whitespace-nowrap">Universal
+              OS</span>
           </div>
         </div>
         <!-- Right Showcase Area (The "Curated Gallery" Dual-Mockup Stack) -->
@@ -399,7 +592,8 @@
                 transform-origin: center;
               ">
               <div class="w-full h-full rounded-[0.9rem] overflow-hidden bg-white relative">
-                <img class="w-full h-full object-cover" alt="BlueKeys Keyboard Interface" src="light/keybaord.jpg" />
+                <img class="w-full h-full object-cover" loading="lazy" decoding="async"
+                  alt="BlueKeys Keyboard Interface" src="light/keybaord.jpg" />
                 <div
                   class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-40 pointer-events-none mix-blend-overlay">
                 </div>
@@ -414,7 +608,8 @@
                 transform: translateX(-110px);
               ">
               <div class="w-full h-full rounded-[0.9rem] overflow-hidden bg-white relative">
-                <img class="w-full h-full object-cover" alt="BlueKeys Mouse Interface" src="light/mouse.jpg" />
+                <img class="w-full h-full object-cover" loading="lazy" decoding="async" alt="BlueKeys Mouse Interface"
+                  src="light/mouse.jpg" />
                 <div
                   class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-40 pointer-events-none mix-blend-overlay">
                 </div>
@@ -439,7 +634,8 @@
                   <!-- Slide 0: Mouse -->
                   <div class="absolute inset-0 transition-opacity duration-700 opacity-100 z-10 mobile-slide"
                     data-slide="0">
-                    <img class="w-full h-full object-cover" alt="BlueKeys Mouse Interface" src="light/mouse.jpg" />
+                    <img class="w-full h-full object-cover" loading="lazy" decoding="async"
+                      alt="BlueKeys Mouse Interface" src="light/mouse.jpg" />
                     <div
                       class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-40 pointer-events-none mix-blend-overlay">
                     </div>
@@ -447,8 +643,8 @@
                   <!-- Slide 1: Keyboard -->
                   <div class="absolute inset-0 transition-opacity duration-700 opacity-0 z-0 mobile-slide"
                     data-slide="1">
-                    <img class="w-full h-full object-cover" loading="lazy" alt="BlueKeys Keyboard Interface"
-                      src="light/keybaord.jpg" />
+                    <img class="w-full h-full object-cover" loading="lazy" decoding="async"
+                      alt="BlueKeys Keyboard Interface" src="light/keybaord.jpg" />
                     <div
                       class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-40 pointer-events-none mix-blend-overlay">
                     </div>
@@ -456,7 +652,8 @@
                   <!-- Slide 2: Media Widget -->
                   <div class="absolute inset-0 transition-opacity duration-700 opacity-0 z-0 mobile-slide"
                     data-slide="2">
-                    <img class="w-full h-full object-cover" loading="lazy" alt="BlueKeys Media Interface" src="light/media.png" />
+                    <img class="w-full h-full object-cover" loading="lazy" decoding="async"
+                      alt="BlueKeys Media Interface" src="light/media.png" />
                     <div
                       class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-40 pointer-events-none mix-blend-overlay">
                     </div>
@@ -508,8 +705,8 @@
                   <div
                     class="absolute inset-0 transition-all duration-1000 ease-out opacity-100 scale-100 z-10 desktop-slide"
                     data-desktop-slide="0">
-                    <img class="w-full h-full object-cover select-none" alt="BlueKeys Keyboard Landscape"
-                      src="light/landscape/keybaord.webp" draggable="false" />
+                    <img class="w-full h-full object-cover select-none" loading="lazy" decoding="async"
+                      alt="BlueKeys Keyboard Landscape" src="light/landscape/keybaord.webp" draggable="false" />
                     <div
                       class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30 pointer-events-none mix-blend-overlay">
                     </div>
@@ -519,8 +716,8 @@
                   <div
                     class="absolute inset-0 transition-all duration-1000 ease-out opacity-0 scale-[0.97] z-0 desktop-slide"
                     data-desktop-slide="1">
-                    <img class="w-full h-full object-cover select-none" loading="lazy" alt="BlueKeys Mouse Landscape"
-                      src="light/landscape/mouse.webp" draggable="false" />
+                    <img class="w-full h-full object-cover select-none" loading="lazy" decoding="async"
+                      alt="BlueKeys Mouse Landscape" src="light/landscape/mouse.webp" draggable="false" />
                     <div
                       class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30 pointer-events-none mix-blend-overlay">
                     </div>
@@ -530,8 +727,8 @@
                   <div
                     class="absolute inset-0 transition-all duration-1000 ease-out opacity-0 scale-[0.97] z-0 desktop-slide"
                     data-desktop-slide="2">
-                    <img class="w-full h-full object-cover select-none" loading="lazy" alt="BlueKeys Media Landscape"
-                      src="light/landscape/media.webp" draggable="false" />
+                    <img class="w-full h-full object-cover select-none" loading="lazy" decoding="async"
+                      alt="BlueKeys Media Landscape" src="light/landscape/media.webp" draggable="false" />
                     <div
                       class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30 pointer-events-none mix-blend-overlay">
                     </div>
@@ -554,7 +751,7 @@
             </div>
           </div>
         </div>
-        
+
       </div>
     </main>
 
@@ -562,6 +759,291 @@
     <div id="features-section-container" class="snap-section relative min-h-screen overflow-hidden">
       <!-- Injected by loader script -->
     </div>
+
+    <!-- BEGIN MERGED GALLERY -->
+    <div id="gallery-section-container" class="snap-section relative min-h-screen pt-12 pb-24">
+      <!-- BEGIN: GallerySection -->
+      <main class="max-w-[1400px] mx-auto px-6 md:px-12 fade-in-load" style="animation-delay: 0.2s;">
+        <!-- Gallery Title -->
+        <header class="mb-16" data-reveal="fade-up">
+          <h2
+            class="gallery-title-prefix gallery-title text-sm tracking-[0.2em] uppercase font-medium flex items-center text-[#1c1b1b]">
+            GALLERY
+          </h2>
+        </header>
+        <!-- Photo Grid: Dynamic Aspect-Ratio Masonry Layout with Shadows and Premium Overlapped Captions -->
+        <section class="columns-1 md:columns-2 lg:columns-3 gap-8" data-purpose="image-grid">
+
+          <!-- Item 1: Keyboard Interface (Landscape) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys Bluetooth Keyboard landscape interface" class="w-full h-auto image-zoom"
+                src="light/landscape/keybaord.webp" width="2400" height="1080" decoding="async" fetchpriority="high" />
+              <!-- Staggered horizontal curtain wipe reveal -->
+              <div class="reveal-curtain"></div>
+            </div>
+          </div>
+
+          <!-- Item 2: Homescreen Widget (Portrait) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys Interactive Homescreen Widget for quick control" class="w-full h-auto image-zoom"
+                src="light/widget_optimized.jpg" width="800" height="606" decoding="async" fetchpriority="high" />
+              <!-- Staggered horizontal curtain wipe reveal -->
+              <div class="reveal-curtain"></div>
+              <!-- Minimalist Transparent Caption Overlaid (Bottom-Centered, Small Cute Grey Text) -->
+              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Homescreen Widget</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 3: Precision Mouse (Landscape) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys Bluetooth Mouse and Air Mouse interface" class="w-full h-auto image-zoom"
+                src="light/landscape/mouse.webp" width="2400" height="1080" decoding="async" loading="lazy" />
+              <!-- Staggered horizontal curtain wipe reveal -->
+              <div class="reveal-curtain"></div>
+              <!-- Minimalist Transparent Caption Overlaid (Bottom-Centered, Small Cute Grey Text) -->
+              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Precision Mouse</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 4: Clipboard Sharing (Portrait) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys Seamless local clipboard text sync interface" class="w-full h-auto image-zoom"
+                src="light/clipboard.jpg" width="800" height="532" decoding="async" loading="lazy" />
+              <!-- Staggered horizontal curtain wipe reveal -->
+              <div class="reveal-curtain"></div>
+              <!-- Minimalist Transparent Caption Overlaid (Bottom-Centered, Small Cute Grey Text) -->
+              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Clipboard Sharing</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 5: Media Controls (Landscape) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys Compact media playback and presentation control interface"
+                class="w-full h-auto image-zoom" src="light/landscape/media.webp" width="2400" height="1080"
+                decoding="async" loading="lazy" />
+              <!-- Staggered horizontal curtain wipe reveal -->
+              <div class="reveal-curtain"></div>
+              <!-- Minimalist Transparent Caption Overlaid (Bottom-Centered, Small Cute Grey Text) -->
+              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Media Controls</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 6: Multi-Device Share (Portrait) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys local Bluetooth connection setup and share screen" class="w-full h-auto image-zoom"
+                src="light/share.jpg" width="600" height="1281" decoding="async" loading="lazy" />
+              <!-- Staggered horizontal curtain wipe reveal -->
+              <div class="reveal-curtain"></div>
+              <!-- Minimalist Transparent Caption Overlaid (Bottom-Centered, Small Cute Grey Text) -->
+              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Multi-Device Share</span>
+              </div>
+            </div>
+          </div>
+
+        </section>
+      </main>
+      <!-- END: GallerySection -->
+    </div>
+
+
+    <!-- BEGIN MERGED FEEDBACK -->
+    <div id="feedback-section-container" class="snap-section relative min-h-screen flex items-center justify-center">
+      <main class="flex-1 flex items-center justify-center px-6 py-12">
+        <div class="w-full max-w-lg">
+
+          <!-- Header -->
+          <div class="mb-6">
+            <p class="text-xs font-bold tracking-[0.408em] uppercase text-secondary mb-3">We value youe your inputs</p>
+            <h1 class="font-headline font-extrabold text-4xl md:text-5xl text-primary leading-tight tracking-tight">
+              Send Feedback
+            </h1>
+            <p class="mt-2 text-primary/60 font-light leading-relaxed text-sm">
+              We'd love to hear your thoughts, ideas, or bug reports.
+            </p>
+          </div>
+
+          <!-- Global success banner -->
+          <div data-fs-success
+            class="hidden mb-6 flex items-center gap-3 bg-[#8ecae6]/20 border border-[#8ecae6]/40 text-primary rounded-xl px-5 py-4 text-sm font-medium">
+            <span class="material-symbols-outlined text-[20px] text-secondary">check_circle</span>
+            <span>Thanks for your feedback!</span>
+          </div>
+
+          <!-- Global error banner -->
+          <div data-fs-error
+            class="hidden mb-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-5 py-4 text-sm font-medium">
+            <span class="material-symbols-outlined text-[20px]">error</span>
+            <span>Something went wrong. Please try again.</span>
+          </div>
+
+          <!-- Form -->
+          <form id="feedback-form" class="space-y-4" action="https://formspree.io/f/mzdwrapv" method="POST" novalidate>
+
+            <!-- Name -->
+            <div>
+              <label for="name"
+                class="block text-xs font-bold tracking-widest uppercase text-primary/50 mb-2">Name</label>
+              <input type="text" id="name" name="name" data-fs-field required placeholder="Your name"
+                class="w-full bg-white/70 border border-black/10 rounded-xl px-4 py-2.5 text-sm text-primary placeholder-primary/30 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all aria-invalid:border-red-400 aria-invalid:ring-red-200" />
+              <span data-fs-error="name" class="mt-1.5 block text-xs text-red-500 font-medium"></span>
+            </div>
+
+            <!-- Reaction Emoji Rating -->
+            <div>
+              <label class="block text-xs font-bold tracking-widest uppercase text-primary/50 mb-2">How's your
+                experience?</label>
+              <div class="flex items-center justify-between gap-1">
+                <input type="hidden" id="feeling" name="feeling" value="" data-fs-field />
+
+                <button type="button" data-emoji="sad"
+                  class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
+                  title="Sad">
+                  <span
+                    class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">😢</span>
+                  <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Sad</span>
+                </button>
+
+                <button type="button" data-emoji="meh"
+                  class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
+                  title="Meh">
+                  <span
+                    class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">😕</span>
+                  <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Meh</span>
+                </button>
+
+                <button type="button" data-emoji="ok"
+                  class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
+                  title="Okay">
+                  <span
+                    class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">😐</span>
+                  <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Okay</span>
+                </button>
+
+                <button type="button" data-emoji="good"
+                  class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
+                  title="Good">
+                  <span
+                    class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">🙂</span>
+                  <span class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Good</span>
+                </button>
+
+                <button type="button" data-emoji="love"
+                  class="emoji-btn group flex flex-col items-center gap-0.5 p-1 rounded-lg hover:bg-black/5 active:scale-95 transition-all flex-1"
+                  title="Amazing">
+                  <span
+                    class="text-3xl sm:text-[32px] transition-transform duration-300 group-hover:scale-125">😄</span>
+                  <span
+                    class="text-[9px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-wider">Amazing</span>
+                </button>
+              </div>
+              <span data-fs-error="feeling" class="mt-1.5 block text-xs text-red-500 font-medium"></span>
+            </div>
+
+            <!-- Message -->
+            <div>
+              <label for="message"
+                class="block text-xs font-bold tracking-widest uppercase text-primary/50 mb-2">Feedback</label>
+              <!-- Category Selection Cards -->
+              <div>
+                <input type="hidden" id="category" name="category" value="" data-fs-field />
+                <div class="grid grid-cols-4 gap-1.5 sm:gap-3">
+                  <!-- Bug Report Card -->
+                  <button type="button" data-category="Bug Report"
+                    class="category-card flex items-center justify-center py-1.5 px-3 sm:py-2 sm:px-5 bg-white/70 border border-black/10 rounded-lg hover:bg-black/5 active:scale-[0.98] transition-all w-full">
+                    <span
+                      class="text-[10px] sm:text-xs font-bold text-primary/80 uppercase tracking-wider truncate">Bug</span>
+                  </button>
+
+                  <!-- Add Feature Card -->
+                  <button type="button" data-category="Add Feature"
+                    class="category-card flex items-center justify-center py-1.5 px-3 sm:py-2 sm:px-5 bg-white/70 border border-black/10 rounded-lg hover:bg-black/5 active:scale-[0.98] transition-all w-full">
+                    <span
+                      class="text-[10px] sm:text-xs font-bold text-primary/80 uppercase tracking-wider truncate">Feature</span>
+                  </button>
+
+                  <!-- Error Card -->
+                  <button type="button" data-category="Error"
+                    class="category-card flex items-center justify-center py-1.5 px-3 sm:py-2 sm:px-5 bg-white/70 border border-black/10 rounded-lg hover:bg-black/5 active:scale-[0.98] transition-all w-full">
+                    <span
+                      class="text-[10px] sm:text-xs font-bold text-primary/80 uppercase tracking-wider truncate">Crash
+                      Report</span>
+                  </button>
+
+                  <!-- Other Card -->
+                  <button type="button" data-category="Other"
+                    class="category-card flex items-center justify-center py-1.5 px-3 sm:py-2 sm:px-5 bg-white/70 border border-black/10 rounded-lg hover:bg-black/5 active:scale-[0.98] transition-all w-full">
+                    <span
+                      class="text-[10px] sm:text-xs font-bold text-primary/80 uppercase tracking-wider truncate">Other</span>
+                  </button>
+                </div>
+                <span data-fs-error="category" class="mt-1.5 block text-xs text-red-500 font-medium"></span>
+              </div>
+
+              <textarea id="message" name="message" data-fs-field required rows="8"
+                placeholder="Tell us what's on your mind…"
+                class="w-full bg-white/70 border border-black/10 rounded-xl px-4 py-2.5 text-sm text-primary placeholder-primary/30 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all resize-none aria-invalid:border-red-400 aria-invalid:ring-red-200"></textarea>
+              <span data-fs-error="message" class="mt-1.5 block text-xs text-red-500 font-medium"></span>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" id="submit-btn" data-fs-submit-btn
+              class="relative group w-full overflow-hidden bg-primary text-white px-8 py-3 text-sm font-bold tracking-[0.2em] uppercase rounded-full transition-all duration-500 btn-shadow hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0">
+              <span class="relative z-10 flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">send</span>
+                SEND Feedback
+              </span>
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-neutral-800 to-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+              </div>
+            </button>
+
+          </form>
+
+        </div>
+      </main>
+    </div>
+
+    <!-- Subtle Separation Divider -->
+    <div class="max-w-5xl mx-auto px-6 mb-8 mt-16" data-reveal="fade-in">
+      <div class="border-t border-black/5"></div>
+    </div>
+
+    <!-- Premium Minimal Footer -->
+    <footer class="text-center pb-12" data-reveal="fade-in">
+      <p class="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-primary/35">© 2026 BlueKeys. Engineered
+        for Nothing.</p>
+      <p class="mt-2"><a href="privacy.html"
+          class="text-[10px] sm:text-xs font-semibold tracking-[0.15em] uppercase text-neutral-800/40 hover:text-neutral-800 transition-colors">Privacy
+          Policy</a></p>
+    </footer>
+
   </div>
 
   <!-- ── Desktop Slideshow Controller ───────────────────────── -->
@@ -816,6 +1298,283 @@
     })();
   </script>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const feedbackForm = document.getElementById('feedback-form');
+
+      // Category Selection Selector Logic
+      const categoryCards = document.querySelectorAll('.category-card');
+      const categoryInput = document.getElementById('category');
+      const categoryError = document.querySelector('[data-fs-error="category"]');
+
+      // Emoji Rating Selector Logic
+      const emojiBtns = document.querySelectorAll('.emoji-btn');
+      const feelingInput = document.getElementById('feeling');
+
+      // Form Validation Logic (Name and Feedback are compulsory)
+      const nameInput = document.getElementById('name');
+      const nameError = document.querySelector('[data-fs-error="name"]');
+      const messageInput = document.getElementById('message');
+      const messageError = document.querySelector('[data-fs-error="message"]');
+
+      function validateName() {
+        if (nameInput && nameError) {
+          if (!nameInput.value.trim()) {
+            nameError.textContent = 'Name is required.';
+            nameInput.setAttribute('aria-invalid', 'true');
+            return false;
+          } else {
+            nameError.textContent = '';
+            nameInput.removeAttribute('aria-invalid');
+            return true;
+          }
+        }
+        return true;
+      }
+
+      function validateCategory() {
+        if (categoryInput && categoryError) {
+          if (!categoryInput.value) {
+            categoryError.textContent = 'Please select a category.';
+            return false;
+          } else {
+            categoryError.textContent = '';
+            return true;
+          }
+        }
+        return true;
+      }
+
+      function validateMessage() {
+        if (messageInput && messageError) {
+          if (!messageInput.value.trim()) {
+            messageError.textContent = 'Feedback message is required.';
+            messageInput.setAttribute('aria-invalid', 'true');
+            return false;
+          } else {
+            messageError.textContent = '';
+            messageInput.removeAttribute('aria-invalid');
+            return true;
+          }
+        }
+        return true;
+      }
+
+      if (nameInput) {
+        nameInput.addEventListener('blur', validateName);
+        nameInput.addEventListener('input', () => {
+          if (nameInput.value.trim()) {
+            nameError.textContent = '';
+            nameInput.removeAttribute('aria-invalid');
+          }
+        });
+      }
+
+      if (messageInput) {
+        messageInput.addEventListener('blur', validateMessage);
+        messageInput.addEventListener('input', () => {
+          if (messageInput.value.trim()) {
+            messageError.textContent = '';
+            messageInput.removeAttribute('aria-invalid');
+          }
+        });
+      }
+
+      if (feedbackForm) {
+        feedbackForm.addEventListener('submit', async (e) => {
+          const isNameValid = validateName();
+          const isCategoryValid = validateCategory();
+          const isMessageValid = validateMessage();
+
+          if (!isNameValid || !isCategoryValid || !isMessageValid) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return;
+          }
+
+          // Custom Native AJAX Submit using Fetch to handle errors gracefully
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          const submitBtn = document.getElementById('submit-btn');
+          const successBanner = document.querySelector('[data-fs-success]');
+          const errorBanner = document.querySelector('[data-fs-error]');
+          const errorText = errorBanner ? errorBanner.querySelector('span:last-child') : null;
+
+          // Show loading state
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            const btnSpan = submitBtn.querySelector('span.relative');
+            if (btnSpan) btnSpan.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> Sending...';
+          }
+
+          // Hide previous alerts
+          if (successBanner) successBanner.classList.add('hidden');
+          if (errorBanner) errorBanner.classList.add('hidden');
+
+          try {
+            const formData = new FormData(feedbackForm);
+
+            // Send as clean application/json to prevent 400 Errors on Formspree Free accounts
+            const data = {};
+            formData.forEach((value, key) => {
+              data[key] = value;
+            });
+
+            const response = await fetch("https://formspree.io/f/mzdwrapv", {
+              method: "POST",
+              body: JSON.stringify(data),
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+              // Successful submission
+              if (successBanner) successBanner.classList.remove('hidden');
+              feedbackForm.reset();
+            } else {
+              // Server validation / limitation errors
+              console.error("Formspree Server Error Response:", result);
+              let errorMsg = 'Something went wrong. Please try again.';
+              if (result.errors && result.errors.length > 0) {
+                errorMsg = result.errors.map(err => err.message).join(', ');
+              } else if (result.error) {
+                errorMsg = result.error;
+              }
+
+              if (response.status === 400 && errorMsg.toLowerCase().includes('email')) {
+                errorMsg = 'A valid email field is required by Formspree.';
+              }
+
+              if (errorText) errorText.textContent = errorMsg;
+              if (errorBanner) errorBanner.classList.remove('hidden');
+            }
+          } catch (err) {
+            console.error("Formspree Connection Network Error:", err);
+            if (errorText) errorText.textContent = 'Connection error. Please check your internet and try again.';
+            if (errorBanner) errorBanner.classList.remove('hidden');
+          } finally {
+            // Restore submit button state
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              const btnSpan = submitBtn.querySelector('span.relative');
+              if (btnSpan) {
+                btnSpan.innerHTML = `
+                    <span class="material-symbols-outlined text-[18px]">send</span>
+                    SEND Feedback
+                  `;
+              }
+            }
+          }
+        }, true); // useCapture to execute first
+      }
+
+      if (categoryCards.length > 0 && categoryInput) {
+        categoryCards.forEach(card => {
+          card.addEventListener('click', function () {
+            const value = this.getAttribute('data-category');
+            categoryInput.value = value;
+
+            if (categoryError) {
+              categoryError.textContent = '';
+            }
+
+            // Clear previous active states
+            categoryCards.forEach(c => {
+              c.classList.remove('bg-[#8ecae6]/20', 'border-[#8ecae6]', 'ring-1', 'ring-[#8ecae6]/30');
+              c.classList.add('bg-white/70', 'border-black/10');
+            });
+
+            // Add active state to selected
+            this.classList.remove('bg-white/70', 'border-black/10');
+            this.classList.add('bg-[#8ecae6]/20', 'border-[#8ecae6]', 'ring-1', 'ring-[#8ecae6]/30');
+          });
+        });
+      }
+
+      if (emojiBtns.length > 0 && feelingInput) {
+        emojiBtns.forEach(btn => {
+          btn.addEventListener('click', function () {
+            const value = this.getAttribute('data-emoji');
+            const isAlreadySelected = this.classList.contains('bg-[#8ecae6]/20');
+
+            // Clear previous active states on all buttons
+            emojiBtns.forEach(b => {
+              b.classList.remove('bg-[#8ecae6]/20', 'ring-1', 'ring-[#8ecae6]/30');
+              const emo = b.querySelector('span:first-child');
+              const lbl = b.querySelector('span:last-child');
+              emo.classList.remove('scale-125');
+              lbl.classList.remove('text-primary');
+              lbl.classList.add('text-primary/40');
+            });
+
+            if (isAlreadySelected) {
+              feelingInput.value = '';
+            } else {
+              feelingInput.value = value;
+              // Add active state to selected
+              this.classList.add('bg-[#8ecae6]/20', 'ring-1', 'ring-[#8ecae6]/30');
+              const emo = this.querySelector('span:first-child');
+              const lbl = this.querySelector('span:last-child');
+              emo.classList.add('scale-125');
+              lbl.classList.remove('text-primary/40');
+              lbl.classList.add('text-primary');
+            }
+          });
+        });
+      }
+
+      if (feedbackForm) {
+        feedbackForm.addEventListener('reset', function () {
+          resetCategoryCards();
+          resetEmojiRating();
+          resetValidationErrors();
+        });
+      }
+
+      function resetCategoryCards() {
+        if (categoryInput) {
+          categoryInput.value = '';
+          categoryCards.forEach(c => {
+            c.classList.remove('bg-[#8ecae6]/20', 'border-[#8ecae6]', 'ring-1', 'ring-[#8ecae6]/30');
+            c.classList.add('bg-white/70', 'border-black/10');
+          });
+        }
+      }
+
+      function resetEmojiRating() {
+        if (feelingInput) {
+          feelingInput.value = '';
+          emojiBtns.forEach(b => {
+            b.classList.remove('bg-[#8ecae6]/20', 'ring-1', 'ring-[#8ecae6]/30');
+            const emo = b.querySelector('span:first-child');
+            const lbl = b.querySelector('span:last-child');
+            emo.classList.remove('scale-125');
+            lbl.classList.remove('text-primary');
+            lbl.classList.add('text-primary/40');
+          });
+        }
+      }
+
+      function resetValidationErrors() {
+        if (nameInput && nameError) {
+          nameError.textContent = '';
+          nameInput.removeAttribute('aria-invalid');
+        }
+        if (categoryError) {
+          categoryError.textContent = '';
+        }
+        if (messageInput && messageError) {
+          messageError.textContent = '';
+          messageInput.removeAttribute('aria-invalid');
+        }
+      }
+    });
+  </script>
 </body>
 
 </html>
