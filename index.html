@@ -202,9 +202,20 @@
       class="snap-section relative min-h-screen lg:h-screen flex items-center  py-8 lg:py-0 overflow-visible lg:overflow-hidden">
       <!-- Responsive Shader Background with Progressive Loading & Mobile Video -->
       <div id="shader-bg">
-        <!-- Fallback image: always present, visible until video takes over on mobile -->
-        <img id="shader-img" src="shaders/mobile-9:16/desktop - low resolution.jpeg" alt="" role="presentation"
-          class="shader-bg-img" fetchpriority="high" decoding="async" />
+        <!-- Fallback responsive picture: loads correct layout instantly so there is no awkward layout jump -->
+        <picture id="shader-picture">
+          <!-- Wider mobiles -->
+          <source media="(max-width: 640px) and (min-aspect-ratio: 4/3)" srcset="shaders/desktop 19:6/landsacpe screen .jpeg" />
+          <!-- Tall/narrow phones -->
+          <source media="(max-width: 640px)" srcset="shaders/mobile-9:16/mobile.jpeg" />
+          <!-- Landscape tablets -->
+          <source media="(max-width: 1024px) and (min-aspect-ratio: 6/5)" srcset="shaders/desktop 19:6/landsacpe screen .jpeg" />
+          <!-- Portrait tablets -->
+          <source media="(max-width: 1024px)" srcset="shaders/tablets/tablets.png" />
+          <!-- Default (Desktop) low-res fallback -->
+          <img id="shader-img" src="shaders/mobile-9:16/desktop - low resolution.jpeg" alt="" role="presentation"
+            class="shader-bg-img" fetchpriority="high" decoding="async" />
+        </picture>
         <canvas id="shader-transition-canvas"></canvas>
         <!-- Mobile ping-pong video layers — A and B alternate so there is
              zero gap: while A plays, B silently buffers the next clip.      -->
@@ -394,6 +405,7 @@
 
           function setupTransitionTrigger(el) {
             transitioning = false;
+            var hasNext = (seqPlaying + 1 < sequence.length);
 
             function triggerNext() {
               if (transitioning) return;
@@ -404,19 +416,33 @@
             }
 
             function onTimeUpdate() {
+              if (!hasNext) return; // No early trigger if this is the last video
               // Trigger crossfade exactly when remaining time matches transition duration (1.8s)
-              // This prevents the video from ending and freezing before the fade completes.
+              // ONLY if the next video is ready. Otherwise, keep playing to the end.
               if (el.duration && el.currentTime >= el.duration - 1.8) {
-                triggerNext();
+                if (standbyEl()._primed) {
+                  triggerNext();
+                }
               }
             }
 
             function onEnded() {
-              triggerNext();
+              if (!hasNext || standbyEl()._primed) {
+                triggerNext();
+              } else {
+                // Next video isn't ready. The current video is now paused on its last frame.
+                // Poll until the next video is primed, then trigger the transition.
+                var waitInterval = setInterval(function() {
+                  if (standbyEl()._primed) {
+                    clearInterval(waitInterval);
+                    triggerNext();
+                  }
+                }, 200);
+              }
             }
 
             el.addEventListener('timeupdate', onTimeUpdate);
-            el.addEventListener('ended', onEnded, { once: true });
+            el.addEventListener('ended', onEnded);
           }
 
           // Called when the active element is about to finish playing its clip
@@ -1477,7 +1503,7 @@
         categoryCards.forEach(card => {
           card.addEventListener('click', function () {
             const value = this.getAttribute('data-category');
-            categoryInput.value = value;
+            const isAlreadySelected = this.classList.contains('bg-[#8ecae6]/20');
 
             if (categoryError) {
               categoryError.textContent = '';
@@ -1489,9 +1515,14 @@
               c.classList.add('bg-white/70', 'border-black/10');
             });
 
-            // Add active state to selected
-            this.classList.remove('bg-white/70', 'border-black/10');
-            this.classList.add('bg-[#8ecae6]/20', 'border-[#8ecae6]', 'ring-1', 'ring-[#8ecae6]/30');
+            if (isAlreadySelected) {
+              categoryInput.value = '';
+            } else {
+              categoryInput.value = value;
+              // Add active state to selected
+              this.classList.remove('bg-white/70', 'border-black/10');
+              this.classList.add('bg-[#8ecae6]/20', 'border-[#8ecae6]', 'ring-1', 'ring-[#8ecae6]/30');
+            }
           });
         });
       }

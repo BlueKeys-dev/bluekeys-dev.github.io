@@ -34,15 +34,18 @@ function initHighResUpgrade(img) {
     }
     
     // Desktop range (> 1024)
-    return 'shaders/tablets/tablets.png';
+    return 'shaders/desktop 19:6/landsacpe screen .jpeg';
   }
 
   var hiResSrc = getShaderSrc();
 
   // Already showing the target image — nothing to do
-  if (img.src.indexOf(hiResSrc) !== -1) return;
+  var currentUrl = img.currentSrc || img.src;
+  // Make sure to URI-encode the src string in case it has spaces when comparing against currentSrc
+  if (currentUrl.indexOf(hiResSrc) !== -1 || currentUrl.indexOf(encodeURI(hiResSrc)) !== -1) return;
 
   var hiResImg = new Image();
+  hiResImg.crossOrigin = 'anonymous'; // Prevent tainted canvas issues
   var isTransitioning = false;
 
   // On mobile (≤640px), the video controller owns the background.
@@ -82,7 +85,41 @@ function initHighResUpgrade(img) {
   // and worst-case just sets src directly.
   function preDecodeAndSwap(target, source) {
     function doSwap() {
+      // Create a smooth crossfade by overlaying a temporary clone
+      var temp = target.cloneNode(true);
+      temp.style.position = 'absolute';
+      temp.style.inset = '0';
+      temp.style.width = '100%';
+      temp.style.height = '100%';
+      temp.style.objectFit = 'cover';
+      temp.style.objectPosition = 'top center';
+      temp.style.zIndex = '-1';
+      temp.removeAttribute('id');
+      
+      if (target.parentNode) {
+        target.parentNode.insertBefore(temp, target);
+      }
+      
+      // Swap the actual source and hide it temporarily
+      target.style.transition = 'none';
+      target.style.opacity = '0';
       target.src = source.src;
+      
+      // Force style recalc
+      target.offsetHeight;
+      
+      // Fade in the new source over 0.8s
+      target.style.transition = 'opacity 0.8s ease-in-out';
+      target.style.opacity = '0.60'; // match .is-loaded opacity
+      
+      // Cleanup the clone after fade completes
+      setTimeout(function() {
+        if (temp.parentNode) {
+          temp.parentNode.removeChild(temp);
+        }
+        target.style.transition = ''; // let CSS take over again
+        target.style.opacity = '';
+      }, 850);
     }
 
     if (typeof createImageBitmap === 'function') {
@@ -103,12 +140,36 @@ function initHighResUpgrade(img) {
              canvas.getContext('experimental-webgl', { alpha: true, premultipliedAlpha: false });
     if (!gl) { fallbackSwap(); return; }
 
-    var dpr = window.devicePixelRatio || 1;
-    canvas.width = tex0Img.clientWidth * dpr;
-    canvas.height = tex0Img.clientHeight * dpr;
+    var CONSTANTS = {
+      imageOpacity: '0.60',
+      cssTransitionMs: 500,
+      shaderDurationMs: 3500
+    };
 
-    // CRITICAL: match viewport to canvas dimensions
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    var dpr = window.devicePixelRatio || 1;
+    function updateCanvasSize() {
+      canvas.width = tex0Img.clientWidth * dpr;
+      canvas.height = tex0Img.clientHeight * dpr;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      if (program) {
+        var canvasSizeLoc = gl.getUniformLocation(program, "canvasSize");
+        if (canvasSizeLoc) {
+          gl.uniform2f(canvasSizeLoc, canvas.width, canvas.height);
+        }
+      }
+    }
+
+    updateCanvasSize();
+
+    var resizeObserver = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(function() {
+        updateCanvasSize();
+      });
+      resizeObserver.observe(tex0Img);
+    } else {
+      window.addEventListener('resize', updateCanvasSize);
+    }
 
     // Copy the image's CSS filter (contrast/brightness) onto the canvas
     if (window.getComputedStyle) {
@@ -118,7 +179,7 @@ function initHighResUpgrade(img) {
       }
     }
 
-    // ── Shaders (ES5-compatible string concatenation) ──────────────────
+    // ── Shaders ────────────────────────────────────────────────────────────
     var vsSource = "attribute vec2 position; varying vec2 vUv; void main() { vUv = position * 0.5 + 0.5; gl_Position = vec4(position, 0.0, 1.0); }";
 
     // Shader with object-fit: cover and object-position: top center math built in
@@ -281,9 +342,9 @@ function initHighResUpgrade(img) {
     // Start the canvas at the IMAGE's opacity so there's no brightness jump.
     // Then gradually fade up to the canvas's own CSS opacity (0.70).
     canvas.style.transition = 'none';
-    canvas.style.opacity = '0.60';  // match .is-loaded opacity exactly
+    canvas.style.opacity = CONSTANTS.imageOpacity;  // match .is-loaded opacity exactly
     canvas.offsetHeight;            // force style recalc before adding transition
-    canvas.style.transition = 'opacity 0.5s ease';
+    canvas.style.transition = 'opacity ' + (CONSTANTS.cssTransitionMs / 1000) + 's ease';
     canvas.style.opacity = '';      // removes inline → falls back to CSS 0.70
 
     gl.uniform1f(pLoc, 0.0);
@@ -300,7 +361,7 @@ function initHighResUpgrade(img) {
 
     // ── Animation loop ────────────────────────────────────────────────
     var startTime = null;
-    var duration = 3500;
+    var duration = CONSTANTS.shaderDurationMs;
 
     function render(now) {
       if (!startTime) startTime = now;
@@ -318,12 +379,12 @@ function initHighResUpgrade(img) {
         requestAnimationFrame(render);
       } else {
         // ── Transition complete ─────────────────────────────────────
-        // Gradually fade the canvas back down to the image's opacity (0.60)
+        // Gradually fade the canvas back down to the image's opacity
         // before swapping, so there's no brightness jump at the end either.
         // ONLY do this if the image hasn't been hidden by the mobile video player!
         if (tex0Img.classList.contains('is-loaded')) {
-          canvas.style.transition = 'opacity 0.5s ease';
-          canvas.style.opacity = '0.60';
+          canvas.style.transition = 'opacity ' + (CONSTANTS.cssTransitionMs / 1000) + 's ease';
+          canvas.style.opacity = CONSTANTS.imageOpacity;
         }
 
         // After the fade-down completes, swap src and clean up.
@@ -340,7 +401,7 @@ function initHighResUpgrade(img) {
           canvas.style.transition = '';
           canvas.style.opacity = '';
           destroyGL();
-        }, 520); // slightly longer than the 0.5s CSS transition
+        }, CONSTANTS.cssTransitionMs + 20); // slightly longer than the CSS transition
       }
     }
 
@@ -348,8 +409,21 @@ function initHighResUpgrade(img) {
 
     // ── Cleanup helper (used on both success and error paths) ──────────
     function destroyGL() {
+      if (t0) gl.deleteTexture(t0);
+      if (t1) gl.deleteTexture(t1);
+      if (buffer) gl.deleteBuffer(buffer);
+      if (vs) gl.deleteShader(vs);
+      if (fs) gl.deleteShader(fs);
+      if (program) gl.deleteProgram(program);
+
       var ext = gl.getExtension('WEBGL_lose_context');
       if (ext) ext.loseContext();
+
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      } else {
+        window.removeEventListener('resize', updateCanvasSize);
+      }
     }
   }
 }
