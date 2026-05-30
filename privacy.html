@@ -269,33 +269,36 @@
           </div>
           <div class="space-y-4 w-full">
             <h2 class="font-headline font-bold text-xl md:text-2xl text-neutral-900">
-              1. No Data Collection or Sharing
+              1. Data We Process Locally (On Your Device)
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <p class="text-sm text-primary/70 font-light leading-relaxed">
+              The following data stays on your device and is never sent to our servers:
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
               <div class="p-4 bg-white/40 rounded-xl border border-black/5">
                 <h3 class="font-bold text-sm text-neutral-900 flex items-center gap-2 mb-2">
-                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> No Personal Info
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Keyboard Suggestions
                 </h3>
                 <p class="text-xs md:text-sm text-primary/70 font-light leading-relaxed">
-                  BlueKeys does not collect, store, track, or share any personal information.
+                  The app learns your typing patterns to provide better word suggestions. This data is stored locally in your app's private storage.
                 </p>
               </div>
 
               <div class="p-4 bg-white/40 rounded-xl border border-black/5">
                 <h3 class="font-bold text-sm text-neutral-900 flex items-center gap-2 mb-2">
-                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> No Accounts Needed
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Clipboard History
                 </h3>
                 <p class="text-xs md:text-sm text-primary/70 font-light leading-relaxed">
-                  You do not need to create an account, log in, or sync with any cloud service to use the app.
+                  If you use the clipboard feature, snippets are stored locally to allow you to type them on your PC.
                 </p>
               </div>
 
-              <div class="p-4 bg-white/40 rounded-xl border border-black/5 md:col-span-2">
+              <div class="p-4 bg-white/40 rounded-xl border border-black/5">
                 <h3 class="font-bold text-sm text-neutral-900 flex items-center gap-2 mb-2">
-                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Keystrokes & Inputs
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Settings & Preferences
                 </h3>
                 <p class="text-xs md:text-sm text-primary/70 font-light leading-relaxed">
-                  The app sends your keystrokes and mouse movements directly to your connected device in <u><strong>real time over local Bluetooth.</strong></u> We never log, save, or send your inputs to anyone.
+                  Your sensitivity settings, themes, and calibration profiles are stored only on your device.
                 </p>
               </div>
             </div>
@@ -330,28 +333,36 @@
           </div>
           <div class="space-y-4 w-full">
             <h2 class="font-headline font-bold text-xl md:text-2xl text-neutral-900">
-              3. Permissions We Need
+              2. Permissions We Use
             </h2>
             <p class="text-sm text-primary/70 font-light leading-relaxed">
-              To work properly, BlueKeys needs access to specific system services. These permissions are strictly used
-              to make the app function and are never used for tracking.
+              To work properly, BlueKeys needs access to specific system services. These permissions are strictly used to make the app function and are never used for tracking.
             </p>
             <div class="space-y-3 pt-2">
               <div class="flex gap-3 items-start p-3.5 bg-white/35 rounded-xl border border-black/5">
                 <span class="material-symbols-outlined text-[20px] text-indigo-500 mt-0.5">bluetooth</span>
                 <div>
-                  <h4 class="font-bold text-xs md:text-sm text-neutral-900">Nearby Devices / Bluetooth</h4>
+                  <h4 class="font-bold text-xs md:text-sm text-neutral-900">Bluetooth & Nearby Devices</h4>
                   <p class="text-xs text-primary/65 font-light mt-0.5">
-                    Used to discover, pair, and connect with your computers, tablets, or other devices.
+                    Required to connect your phone as a mouse/keyboard to your computer.
+                  </p>
+                </div>
+              </div>
+              <div class="flex gap-3 items-start p-3.5 bg-white/35 rounded-xl border border-black/5">
+                <span class="material-symbols-outlined text-[20px] text-indigo-500 mt-0.5">mic</span>
+                <div>
+                  <h4 class="font-bold text-xs md:text-sm text-neutral-900">Microphone (Record Audio)</h4>
+                  <p class="text-xs text-primary/65 font-light mt-0.5">
+                    Used only when you tap the "Voice Input" button to convert speech to text. We do not record or store audio in the background.
                   </p>
                 </div>
               </div>
               <div class="flex gap-3 items-start p-3.5 bg-white/35 rounded-xl border border-black/5">
                 <span class="material-symbols-outlined text-[20px] text-indigo-500 mt-0.5">notifications</span>
                 <div>
-                  <h4 class="font-bold text-xs md:text-sm text-neutral-900">Foreground Service / Notifications</h4>
+                  <h4 class="font-bold text-xs md:text-sm text-neutral-900">Notifications</h4>
                   <p class="text-xs text-primary/65 font-light mt-0.5">
-                    Ensures a steady, unbroken connection while you control your devices in real time. This is used solely to maintain your active Bluetooth keyboard and mouse connection in the background so your inputs are not interrupted.
+                    Used to show a "Foreground Service" notification, which is required by Android to maintain a stable Bluetooth connection.
                   </p>
                 </div>
               </div>
@@ -360,7 +371,7 @@
                 <div>
                   <h4 class="font-bold text-xs md:text-sm text-neutral-900">Bluetooth System Settings</h4>
                   <p class="text-xs text-primary/65 font-light mt-0.5">
-                    Allows the app turn on Bluetooth by user.
+                    Allows the app to turn on Bluetooth as requested by the user.
                   </p>
                 </div>
               </div>
@@ -369,7 +380,52 @@
         </div>
       </section>
 
-      <!-- 4. NO Internet Usage -->
+      <!-- 3. Data We Collect (Feedback Only) -->
+      <section class="glass-card rounded-[1.5rem] p-6 md:p-8 hover:shadow-lg transition-shadow duration-300">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined">folder_zip</span>
+          </div>
+          <div class="space-y-4 w-full">
+            <h2 class="font-headline font-bold text-xl md:text-2xl text-neutral-900">
+              3. Data We Collect (Feedback Only)
+            </h2>
+            <p class="text-sm text-primary/70 font-light leading-relaxed">
+              We do not use trackers or analytics (like Firebase or Google Analytics). The only time data is sent to us is if you voluntarily use the Feedback Form in Settings:
+            </p>
+            <div class="space-y-3 pt-2">
+              <div class="p-4 bg-white/40 rounded-xl border border-black/5">
+                <h3 class="font-bold text-sm text-neutral-900 flex items-center gap-2 mb-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> What we send
+                </h3>
+                <p class="text-xs md:text-sm text-primary/70 font-light leading-relaxed">
+                  Your rating (emoji), feedback text, and technical metadata (App Version, Android Version, and Device Model). Optionally, this can include your last 10 error and crash logs.
+                </p>
+              </div>
+
+              <div class="p-4 bg-white/40 rounded-xl border border-black/5">
+                <h3 class="font-bold text-sm text-neutral-900 flex items-center gap-2 mb-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Purpose
+                </h3>
+                <p class="text-xs md:text-sm text-primary/70 font-light leading-relaxed">
+                  To debug issues and improve the app.
+                </p>
+              </div>
+
+              <div class="p-4 bg-white/40 rounded-xl border border-black/5">
+                <h3 class="font-bold text-sm text-neutral-900 flex items-center gap-2 mb-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Transmission
+                </h3>
+                <p class="text-xs md:text-sm text-primary/70 font-light leading-relaxed">
+                  This data is sent securely via HTTPS to our feedback endpoint (https://formspree.io).
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Third-Party Services -->
       <section class="glass-card rounded-[1.5rem] p-6 md:p-8 hover:shadow-lg transition-shadow duration-300">
         <div class="flex items-start gap-4">
           <div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center shrink-0">
@@ -377,12 +433,15 @@
           </div>
           <div class="space-y-4 w-full">
             <h2 class="font-headline font-bold text-xl md:text-2xl text-neutral-900">
-              4. NO Internet Usage
+              4. Third-Party Services
             </h2>
-            <ul class="space-y-2.5 text-xs md:text-sm text-primary/80 font-light leading-relaxed">
+            <p class="text-sm text-primary/75 font-light leading-relaxed">
+              BlueKeys does not sell your data. We do not use third-party advertising SDKs.
+            </p>
+            <ul class="space-y-2.5 text-xs md:text-sm text-primary/80 font-light leading-relaxed pt-2">
               <li class="flex items-center gap-2.5">
                 <span class="material-symbols-outlined text-[16px] text-sky-500">done</span>
-                <span>- Core features work fully offline.</span>
+                <span>Core features work fully offline.</span>
               </li>
               <li class="flex items-center gap-2.5">
                 <span class="material-symbols-outlined text-[16px] text-sky-500">done</span>
@@ -397,20 +456,35 @@
         </div>
       </section>
 
-      <!-- 5. only internet usages : -->
+      <!-- 5. Data Deletion -->
       <section class="glass-card rounded-[1.5rem] p-6 md:p-8 hover:shadow-lg transition-shadow duration-300">
         <div class="flex items-start gap-4">
-          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined">globe</span>
+          <div class="w-10 h-10 rounded-xl bg-red-500/10 text-red-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined">delete_forever</span>
           </div>
           <div class="space-y-4 w-full">
             <h2 class="font-headline font-bold text-xl md:text-2xl text-neutral-900">
-              5. only internet usages :
+              5. Data Deletion
             </h2>
-            <div class="p-4 bg-white/40 rounded-xl border border-black/5">
-              <p class="text-xs md:text-sm text-primary/80 font-light leading-relaxed">
-                - only required to send feedback and download google fonts
-              </p>
+            <div class="space-y-3 pt-2">
+              <div class="flex gap-3 items-start p-3.5 bg-white/35 rounded-xl border border-black/5">
+                <span class="material-symbols-outlined text-[20px] text-red-500 mt-0.5">cleaning_services</span>
+                <div>
+                  <h4 class="font-bold text-xs md:text-sm text-neutral-900">Clear Suggestions</h4>
+                  <p class="text-xs text-primary/65 font-light mt-0.5">
+                    You can clear your learned typing data at any time via <strong>Settings > Clear Suggestions</strong>.
+                  </p>
+                </div>
+              </div>
+              <div class="flex gap-3 items-start p-3.5 bg-white/35 rounded-xl border border-black/5">
+                <span class="material-symbols-outlined text-[20px] text-red-500 mt-0.5">delete</span>
+                <div>
+                  <h4 class="font-bold text-xs md:text-sm text-neutral-900">App Uninstallation</h4>
+                  <p class="text-xs text-primary/65 font-light mt-0.5">
+                    Uninstalling the app will delete all locally stored data. Since BlueKeys does not require account creation and collects zero personal data, we do not store any personal information on remote servers.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -456,7 +530,7 @@
             </h2>
             <div class="p-4 bg-white/40 rounded-xl border border-black/5">
               <p class="text-xs md:text-sm text-primary/80 font-light leading-relaxed">
-                - BlueKeys does not knowingly collect personal information from children under the age of 13.
+                BlueKeys does not knowingly collect personal information from children under the age of 13.
               </p>
             </div>
           </div>
@@ -476,11 +550,11 @@
             <ul class="space-y-2 text-sm text-primary/75 font-light leading-relaxed">
               <li class="flex items-start gap-2">
                 <span class="material-symbols-outlined text-[16px] text-amber-500 mt-1">warning</span>
-                <span>- Only connect to devices you trust.</span>
+                <span>Only connect to devices you trust.</span>
               </li>
               <li class="flex items-start gap-2.5">
                 <span class="material-symbols-outlined text-[16px] text-red-500 mt-0.5">security</span>
-                <span>- Keep your paired devices secure.</span>
+                <span>Keep your paired devices secure.</span>
               </li>
             </ul>
           </div>
@@ -528,25 +602,6 @@
           </div>
         </section>
       </div>
-
-      <!-- 11. Account and Data Deletion -->
-      <section class="glass-card rounded-[1.5rem] p-6 md:p-8 hover:shadow-lg transition-shadow duration-300">
-        <div class="flex items-start gap-4">
-          <div class="w-10 h-10 rounded-xl bg-red-500/10 text-red-600 flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined">delete_forever</span>
-          </div>
-          <div class="space-y-4 w-full">
-            <h2 class="font-headline font-bold text-xl md:text-2xl text-neutral-900">
-              11. Account and Data Deletion
-            </h2>
-            <div class="p-4 bg-white/40 rounded-xl border border-black/5">
-              <p class="text-xs md:text-sm text-primary/80 font-light leading-relaxed">
-                - Since BlueKeys does not require account creation and collects zero personal data, we do not store any personal information on remote servers. Consequently, no account or data deletion requests are necessary.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
     </main>
 

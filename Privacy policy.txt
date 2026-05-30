@@ -5,28 +5,32 @@ Thank you for using BlueKeys.
 
 BlueKeys is an Android app that turns your device into a Bluetooth keyboard and mouse. Your privacy is important to us. It works locally using Bluetooth, without needing the internet, servers, or cloud accounts.
 
-1. No Data Collection or Sharing
-- No Personal Info: BlueKeys does not collect, store, track, or share any personal information.
-- No Accounts: You do not need to create an account, log in, or sync with any cloud service to use the app.
-- Keystrokes & Inputs: The app sends your keystrokes and mouse movements directly to your connected device in real time. We never log, save, or send your inputs to anyone.
+1. Data We Process Locally (On Your Device)
+The following data stays on your device and is never sent to our servers:
+- Keyboard Suggestions: The app learns your typing patterns to provide better word suggestions. This data is stored locally in your app's private storage.
+- Clipboard History: If you use the clipboard feature, snippets are stored locally to allow you to type them on your PC.
+- Settings & Preferences: Your sensitivity settings, themes, and calibration profiles are stored only on your device.
 
-2.What we collect
-- Feedback: If you choose to send us feedback( includes last 10 error and crash logs-optional), we collect it using the formspree endpoint (https://formspree.io). This is the only time the app sends any information online, and it is completely optional. 
+2. Permissions We Use
+- Bluetooth & Nearby Devices: Required to connect your phone as a mouse/keyboard to your computer.
+- Microphone (Record Audio): Used only when you tap the "Voice Input" button to convert speech to text. We do not record or store audio in the background.
+- Notifications: Used to show a "Foreground Service" notification, which is required by Android to maintain a stable Bluetooth connection.
+- Bluetooth System Settings: Allows the app to turn on Bluetooth as requested by the user.
 
-3. Permissions We Need
-To work properly, BlueKeys needs these permissions:
-- Nearby Devices / Bluetooth: To find, pair, and connect with your computers or other devices.
-- Foreground Service / Notifications: To keep the connection stable while you are using the app. This is used solely to maintain your active Bluetooth keyboard and mouse connection in the background so your inputs are not interrupted.
-- Bluetooth System Settings: To turn Bluetooth on when you start the app.
+These permissions are strictly used to make the app function and are never used for tracking.
 
-These permissions are strictly used to make the app work. We do not use them for tracking.
+3. Data We Collect (Feedback Only)
+We do not use trackers or analytics (like Firebase or Google Analytics). The only time data is sent to us is if you voluntarily use the Feedback Form in Settings:
+- What we send: Your rating (emoji), feedback text, and technical metadata (App Version, Android Version, and Device Model). Optionally, this can include your last 10 error and crash logs.
+- Purpose: To debug issues and improve the app.
+- Transmission: This data is sent securely via HTTPS to our feedback endpoint (https://formspree.io).
 
-4.NO Internet Usage
-- Core features work fully offline.
-- We do not use advertising SDKs, tracking tools, analytics, or payment processors.
+4. Third-Party Services
+BlueKeys does not sell your data. We do not use third-party advertising SDKs. Core features work fully offline.
 
-5.only internet usages :
-- only required to send feedback and download google fonts
+5. Data Deletion
+- You can clear your learned typing data at any time via Settings > Clear Suggestions.
+- Uninstalling the app will delete all locally stored data. Since BlueKeys does not require account creation and collects zero personal data, we do not store any personal information on remote servers.
 
 6. Compatibility
 - Works on Android 9 and newer.
@@ -43,8 +47,4 @@ These permissions are strictly used to make the app work. We do not use them for
 We may update this policy. Any updates will be posted on this page with a new effective date.
 
 10. Contact Us
-If you have questions, please email us at:
-to desktopio684@gmail.com
-
-11. Account and Data Deletion
-- Since BlueKeys does not require account creation and collects zero personal data, we do not store any personal information on remote servers. Consequently, no account or data deletion requests are necessary.
+If you have questions, please email us at: to desktopio684@gmail.com
