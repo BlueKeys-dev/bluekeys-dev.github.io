@@ -141,9 +141,9 @@ function initHighResUpgrade(img) {
     if (!gl) { fallbackSwap(); return; }
 
     var CONSTANTS = {
-      imageOpacity: '0.60',
-      cssTransitionMs: 500,
-      shaderDurationMs: 3500
+      imageOpacity: '0.40',       // Reduced opacity so it doesn't cover the images too heavily
+      cssTransitionMs: 300,       // Faster fade
+      shaderDurationMs: 1500      // Faster overall transition (was 3500)
     };
 
     var dpr = window.devicePixelRatio || 1;

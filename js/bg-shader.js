@@ -121,39 +121,39 @@ function initBgShader() {
 
       // ── Spacious fluid scale ─────────────────────────────
       // Lower = more zoomed out = more spacious/airy
-      vec2 base = st * 0.5;
+      vec2 base = st * 0.45; // slightly wider
       
       // ── Slow breathing pulse ─────────────────────────────
-      float breath = sin(t * 0.3) * 0.15 + 1.0;
+      float breath = sin(t * 0.25) * 0.15 + 1.0;
 
       // ── Single-layer domain warping (clean, not cluttered) ──
       vec2 q = vec2(
-        fbm(base + vec2(t * 0.025, t * 0.015)),
-        fbm(base + vec2(-t * 0.02,  t * 0.03))
+        fbm(base + vec2(t * 0.02, t * 0.01)),
+        fbm(base + vec2(-t * 0.015, t * 0.025))
       );
 
-      // Gentle warp — lower multiplier = less merging
-      float flow = fbm(base + 2.0 * q);
+      // Gentle warp
+      float flow = fbm(base + 1.8 * q);
 
       // ── Colour palette ─────────────────────────────────────
-      vec3 col1 = vec3(0.980, 0.976, 0.965);   // off-white
-      vec3 col2 = vec3(0.557, 0.792, 0.902);   // brand blue
-      vec3 col3 = vec3(0.920, 0.960, 0.980);   // soft sky
-      vec3 col4 = vec3(0.350, 0.620, 0.820);   // deeper accent
+      vec3 brandBlue = vec3(0.20, 0.65, 0.90);   // strong brand blue
+      vec3 skyBlue   = vec3(0.40, 0.75, 0.95);   // bright sky
+      vec3 deepBlue  = vec3(0.10, 0.45, 0.80);   // rich deep accent
 
-      // Gentle, spacious colour blending
+      // Calculate how "fluid" this pixel is
       float f = flow * breath;
+      float fluidIntensity = smoothstep(-0.2, 0.8, f);
       
-      // Wide, soft gradient — not sharp transitions
-      vec3 color = mix(col1, col3, smoothstep(-0.5, 0.6, f));
+      // Base color is sky blue
+      vec3 color = skyBlue;
       
-      // Subtle blue accent — reduced intensity to avoid "merging" look
-      color = mix(color, col2, smoothstep(0.2, 1.0, q.x + q.y) * 0.35);
-      color = mix(color, col4, smoothstep(0.6, 1.4, q.x * q.y + 0.5) * 0.15);
+      // Mix in brand blue and deep blue based on the warp
+      color = mix(color, brandBlue, smoothstep(0.2, 1.1, q.x + q.y));
+      color = mix(color, deepBlue, smoothstep(0.5, 1.5, q.x * q.y + 0.4));
 
       #ifndef IS_MOBILE
         // Subtle film grain (desktop only)
-        float grain = fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453) * 0.02;
+        float grain = fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453) * 0.025;
         color -= grain;
 
         // Mouse hover — soft gradient pull
@@ -161,22 +161,26 @@ function initBgShader() {
         mouse.x *= aspect;
         mouse.y = 1.0 - mouse.y;
         float mDist = distance(st, mouse);
-        float hover = smoothstep(0.5, 0.0, mDist) * 0.15;
-        color = mix(color, col2, hover);
+        float hover = smoothstep(0.6, 0.0, mDist) * 0.2;
+        color = mix(color, skyBlue, hover);
 
         // Ripple colour bloom
         float bloom = exp(-tDist * 8.0) * strength;
         color = mix(color, vec3(1.0), bloom * 0.3);
-        color = mix(color, col4, bloom * 0.4);
+        color = mix(color, skyBlue, bloom * 0.5);
       #endif
 
       // ── Vertical alpha fade ────────────────────────────────
-      float alpha = smoothstep(0.0, 0.5, v_uv.y + 0.15);
+      // Base transparency is the fluid intensity (so background shows through)
+      float alpha = fluidIntensity;
+      
+      // Fade out near the bottom
+      float fade = smoothstep(0.0, 0.6, v_uv.y + 0.1);
 
       #ifdef IS_MOBILE
-        gl_FragColor = vec4(color, alpha * 0.9);
+        gl_FragColor = vec4(color, alpha * fade * 0.6); // 60% opacity max on mobile
       #else
-        gl_FragColor = vec4(color, alpha * 0.75);
+        gl_FragColor = vec4(color, alpha * fade * 0.5); // 50% opacity max on desktop
       #endif
     }
   `;
