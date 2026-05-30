@@ -392,7 +392,17 @@
             var p = el.play();
             if (p && typeof p.then === 'function') {
               p.then(function () {
-                if (isFirst) crossfadeImgToVideo(el);
+                if (isFirst) {
+                  var checkRender = function() {
+                    if (el.currentTime > 0) {
+                      crossfadeImgToVideo(el);
+                    } else {
+                      requestAnimationFrame(checkRender);
+                    }
+                  };
+                  checkRender();
+                  setTimeout(function() { crossfadeImgToVideo(el); }, 400); // Safety fallback
+                }
               }).catch(function () {
                 revealImg(); // autoplay blocked — fall back to static image
               });
@@ -415,10 +425,10 @@
               onClipEnded();
             }
 
+            // Trigger crossfade exactly when remaining time matches transition duration (1.8s)
+            // ONLY if the next video is ready. Otherwise, keep playing to the end.
             function onTimeUpdate() {
-              if (!hasNext) return; // No early trigger if this is the last video
-              // Trigger crossfade exactly when remaining time matches transition duration (1.8s)
-              // ONLY if the next video is ready. Otherwise, keep playing to the end.
+              if (!hasNext) return;
               if (el.duration && el.currentTime >= el.duration - 1.8) {
                 if (standbyEl()._primed) {
                   triggerNext();
@@ -464,22 +474,48 @@
             seqPlaying = nextSeq;
             swapSlot(); // incoming is now active
 
-            crossfadeVideos(incoming, outgoing); // simultaneous opacity swap
-
             // Play incoming (already buffered — no load() needed)
             incoming.autoplay = true; // Re-enable autoplay for the active video
-            incoming.play().catch(function () { /* silently ignore */ });
+            
+            var playPromise = incoming.play();
+            var hasStartedTransition = false;
+
+            function doTransition() {
+              if (hasStartedTransition) return;
+              hasStartedTransition = true;
+
+              crossfadeVideos(incoming, outgoing); // simultaneous opacity swap
+
+              // After the outgoing fades out, pause and free it, then prime it
+              // for the video AFTER next (if any)
+              setTimeout(function () {
+                outgoing.pause();
+                outgoing._primed = false;
+                primeStandby(seqPlaying + 1); // e.g. prime clip 2 while clip 1 plays
+              }, T);
+            }
+
+            if (playPromise && typeof playPromise.then === 'function') {
+              playPromise.then(function() {
+                // Wait for the first actual rendering frame (currentTime > 0) to avoid any black blink.
+                var checkRender = function() {
+                  if (incoming.currentTime > 0) {
+                    doTransition();
+                  } else {
+                    requestAnimationFrame(checkRender);
+                  }
+                };
+                checkRender();
+                setTimeout(doTransition, 400); // Safety fallback
+              }).catch(function() {
+                doTransition();
+              });
+            } else {
+              doTransition();
+            }
 
             // Setup trigger on incoming
             setupTransitionTrigger(incoming);
-
-            // After the outgoing fades out, pause and free it, then prime it
-            // for the video AFTER next (if any)
-            setTimeout(function () {
-              outgoing.pause();
-              outgoing._primed = false;
-              primeStandby(seqPlaying + 1); // e.g. prime clip 2 while clip 1 plays
-            }, T);
           }
 
           // ——— Kickoff: plays clip 0 on active, primes clip 1 on standby ———
@@ -525,6 +561,29 @@
             videoSystemStarted = true;
             // Slight delay so the fallback image is painted first
             setTimeout(function () { downloadBlob(0); }, 200);
+          }
+
+          // ——— IntersectionObserver to Pause Video When Not in Viewport ———
+          if ('IntersectionObserver' in window) {
+            var welcomeSection = document.getElementById('welcome-section');
+            if (welcomeSection) {
+              var welcomeObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                  var act = activeEl();
+                  if (!started || !act) return;
+                  if (entry.isIntersecting) {
+                    if (act.paused) {
+                      act.play().catch(function () { /* silently ignore */ });
+                    }
+                  } else {
+                    if (!act.paused) {
+                      act.pause();
+                    }
+                  }
+                });
+              }, { threshold: 0.05 });
+              welcomeObserver.observe(welcomeSection);
+            }
           }
 
           if (img.classList.contains('is-loaded')) {

@@ -1,6 +1,6 @@
 /**
- * BlueKeys — Interactive WebGL Fluid Background Shader
- * Slow breathing flow + dramatic ripple warp on touch/click
+ * BlueKeys — Premium WebGL Fluid Background Shader
+ * Gentle, spacious breathing flow with subtle desktop-only ripple
  */
 function initBgShader() {
   const canvas = document.getElementById("shader-canvas");
@@ -18,6 +18,8 @@ function initBgShader() {
     return;
   }
 
+  const isMobile = window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent);
+
   // ── Vertex Shader ──────────────────────────────────────────
   const vsSource = `
     attribute vec2 a_position;
@@ -30,8 +32,6 @@ function initBgShader() {
   `;
 
   // ── Fragment Shader ────────────────────────────────────────
-  const isMobile = window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent);
-
   const fsSource = `
     precision mediump float;
     ${isMobile ? '#define IS_MOBILE' : ''}
@@ -39,8 +39,8 @@ function initBgShader() {
 
     uniform vec2  u_resolution;
     uniform float u_time;
-    uniform vec2  u_mouse;       // smoothed pointer position (px)
-    uniform vec3  u_touch;       // (x, y) in px + z = ripple strength [0..1]
+    uniform vec2  u_mouse;
+    uniform vec3  u_touch;
 
     // ─── Simplex 2-D noise ───────────────────────────────────
     vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -49,10 +49,10 @@ function initBgShader() {
 
     float snoise(vec2 v) {
       const vec4 C = vec4(
-        0.211324865405187,   // (3.0-sqrt(3.0))/6.0
-        0.366025403784439,   // 0.5*(sqrt(3.0)-1.0)
-       -0.577350269189626,   // -1.0 + 2.0 * C.x
-        0.024390243902439    // 1.0 / 41.0
+        0.211324865405187,
+        0.366025403784439,
+       -0.577350269189626,
+        0.024390243902439
       );
       vec2 i  = floor(v + dot(v, C.yy));
       vec2 x0 = v - i + dot(i, C.xx);
@@ -83,7 +83,7 @@ function initBgShader() {
       float amp   = 0.5;
       float freq  = 1.0;
       #ifdef IS_MOBILE
-        for (int i = 0; i < 2; i++) { // Only 2 octaves on mobile
+        for (int i = 0; i < 2; i++) {
           value += amp * snoise(p * freq);
           freq  *= 2.0;
           amp   *= 0.5;
@@ -103,108 +103,80 @@ function initBgShader() {
       vec2 st = gl_FragCoord.xy / u_resolution.xy;
       st.x *= aspect;
       
-      float t = u_time * 1.0; // Normal time
+      float t = u_time;
 
-      // ── Touch/Click ripple warp ────────────────────────────
-      vec2 touch = u_touch.xy / u_resolution;
-      touch.x *= aspect;
-      touch.y = 1.0 - touch.y;
-      float strength = u_touch.z;
-
-      float tDist = distance(st, touch);
-      float ripple = sin(tDist * 30.0 - t * 6.0)
-                   * exp(-tDist * 5.0)
-                   * strength;
-      
-      vec2 dir = (tDist > 0.001) ? normalize(st - touch) : vec2(0.0);
-      st += dir * ripple * 0.12; 
-
-      // ── Increased Fluid Amount ──────────────────────────
-      vec2 base = st * 0.8; 
-      
-      // ── Breathing pulse ────────────────────────────────────
-      float breath = sin(t * 0.5) * 0.30 + 1.0;
-
-      // ── Normal Domain Warping ──────────────────────────
-      // First layer (macro)
-      vec2 q = vec2(
-        fbm(base + vec2(t * 0.04, t * 0.02)),
-        fbm(base + vec2(-t * 0.03, t * 0.05))
-      );
-      
-      #ifdef IS_MOBILE
-        // Skip second layer entirely on mobile
-        float flow = fbm(base + 3.0 * q);
-        float detail = 0.0;
-      #else
-        // Second layer (micro)
-        vec2 r = vec2(
-          fbm(base + 4.0 * q + vec2(t * 0.06, t * 0.04)),
-          fbm(base + 4.0 * q + vec2(-t * 0.04, -t * 0.06))
-        );
-        // The final flow field
-        float flow = fbm(base + 5.0 * r);
-
-        // Spray / detail only on desktop
-        float particleNoise = snoise(st * 50.0 - t * 1.5 + flow * 5.0);
-        float spray = smoothstep(0.80, 0.98, particleNoise) * 0.9;
-        float detail = snoise(st * 8.0 + t * 0.2 + flow * 0.5) * 0.1;
+      #ifndef IS_MOBILE
+        // ── Desktop-only: Touch/Click ripple warp ──────────────
+        vec2 touch = u_touch.xy / u_resolution;
+        touch.x *= aspect;
+        touch.y = 1.0 - touch.y;
+        float strength = u_touch.z;
+        float tDist = distance(st, touch);
+        float ripple = sin(tDist * 30.0 - t * 6.0)
+                     * exp(-tDist * 5.0)
+                     * strength;
+        vec2 dir = (tDist > 0.001) ? normalize(st - touch) : vec2(0.0);
+        st += dir * ripple * 0.08;
       #endif
 
-      // ── High-frequency grain/texture layer ────────────────────────
-      float grain = fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453) * 0.035;
+      // ── Spacious fluid scale ─────────────────────────────
+      // Lower = more zoomed out = more spacious/airy
+      vec2 base = st * 0.5;
+      
+      // ── Slow breathing pulse ─────────────────────────────
+      float breath = sin(t * 0.3) * 0.15 + 1.0;
 
-      // ── Mouse hover — soft gradient pull ───────────────────
-      vec2 mouse = u_mouse / u_resolution;
-      mouse.x *= aspect;
-      mouse.y = 1.0 - mouse.y;
-      float mDist = distance(st, mouse);
-      float hover = smoothstep(0.6, 0.0, mDist) * 0.25;
+      // ── Single-layer domain warping (clean, not cluttered) ──
+      vec2 q = vec2(
+        fbm(base + vec2(t * 0.025, t * 0.015)),
+        fbm(base + vec2(-t * 0.02,  t * 0.03))
+      );
+
+      // Gentle warp — lower multiplier = less merging
+      float flow = fbm(base + 2.0 * q);
 
       // ── Colour palette ─────────────────────────────────────
-      vec3 col1 = vec3(0.980, 0.976, 0.965);   // #FAF9F6  off-white
-      vec3 col2 = vec3(0.557, 0.792, 0.902);   // #8ecae6  brand blue
-      vec3 col3 = vec3(0.886, 0.945, 0.973);   // #e2f1f8  soft accent
-      vec3 col4 = vec3(0.300, 0.600, 0.800);   // Deep blue for accents
-      vec3 colSpray = vec3(0.9, 0.95, 1.0);    // Bright icy white for spray
+      vec3 col1 = vec3(0.980, 0.976, 0.965);   // off-white
+      vec3 col2 = vec3(0.557, 0.792, 0.902);   // brand blue
+      vec3 col3 = vec3(0.920, 0.960, 0.980);   // soft sky
+      vec3 col4 = vec3(0.350, 0.620, 0.820);   // deeper accent
 
-      // Mix colours from flow + detail + breath
-      float f = flow * breath + detail;
+      // Gentle, spacious colour blending
+      float f = flow * breath;
       
-      vec3 color = mix(col1, col3, smoothstep(-0.6, 0.8, f));
+      // Wide, soft gradient — not sharp transitions
+      vec3 color = mix(col1, col3, smoothstep(-0.5, 0.6, f));
       
-      // Increased fluid coloring
-      #ifdef IS_MOBILE
-        color = mix(color, col2, smoothstep(0.1, 1.2, q.x + q.y) * 0.75); // Use q instead of r
-      #else
-        color = mix(color, col2, smoothstep(0.1, 1.2, r.x + r.y) * 0.75);
-      #endif
-      
-      color = mix(color, col4, smoothstep(0.5, 1.5, q.x + q.y) * 0.4); 
-      
+      // Subtle blue accent — reduced intensity to avoid "merging" look
+      color = mix(color, col2, smoothstep(0.2, 1.0, q.x + q.y) * 0.35);
+      color = mix(color, col4, smoothstep(0.6, 1.4, q.x * q.y + 0.5) * 0.15);
+
       #ifndef IS_MOBILE
-        // Add the fluid spray/particles over the top
-        color = mix(color, colSpray, spray);
+        // Subtle film grain (desktop only)
+        float grain = fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453) * 0.02;
+        color -= grain;
+
+        // Mouse hover — soft gradient pull
+        vec2 mouse = u_mouse / u_resolution;
+        mouse.x *= aspect;
+        mouse.y = 1.0 - mouse.y;
+        float mDist = distance(st, mouse);
+        float hover = smoothstep(0.5, 0.0, mDist) * 0.15;
+        color = mix(color, col2, hover);
+
+        // Ripple colour bloom
+        float bloom = exp(-tDist * 8.0) * strength;
+        color = mix(color, vec3(1.0), bloom * 0.3);
+        color = mix(color, col4, bloom * 0.4);
       #endif
 
-      // Add film grain
-      color -= grain;
-
-      // Hover brightens the blue
-      color = mix(color, col2, hover * 0.4);
-
-      // Ripple colour bloom — brief blue flash near touch
-      float bloom = exp(-tDist * 8.0) * strength;
-      color = mix(color, vec3(1.0, 1.0, 1.0), bloom * 0.4); // flash bright
-      color = mix(color, col4, bloom * 0.6); // then deep blue
-
-      // ── Vertical alpha fade (mask at bottom) ───────────────
-      float alpha = smoothstep(0.0, 0.7, v_uv.y + 0.25);
+      // ── Vertical alpha fade ────────────────────────────────
+      float alpha = smoothstep(0.0, 0.5, v_uv.y + 0.15);
 
       #ifdef IS_MOBILE
-        gl_FragColor = vec4(color, alpha);
+        gl_FragColor = vec4(color, alpha * 0.9);
       #else
-        gl_FragColor = vec4(color, alpha * 0.85);
+        gl_FragColor = vec4(color, alpha * 0.75);
       #endif
     }
   `;
@@ -264,55 +236,32 @@ function initBgShader() {
   let touchPoint = { x: cx, y: cy };
   let touchStrength = 0;
 
-  // Mouse
-  window.addEventListener("mousemove", (e) => {
-    targetMouse.x = e.clientX;
-    targetMouse.y = e.clientY;
-  });
+  if (!isMobile) {
+    // Desktop only — mouse hover + click ripple
+    window.addEventListener("mousemove", (e) => {
+      targetMouse.x = e.clientX;
+      targetMouse.y = e.clientY;
+    });
 
-  // Click — fire ripple on desktop
-  window.addEventListener("mousedown", (e) => {
-    touchPoint.x = e.clientX;
-    touchPoint.y = e.clientY;
-    touchStrength = 1.0;
-  });
-
-  // Touch — full mobile support
-  window.addEventListener("touchstart", (e) => {
-    const t = e.touches[0];
-    targetMouse.x = t.clientX;
-    targetMouse.y = t.clientY;
-    touchPoint.x = t.clientX;
-    touchPoint.y = t.clientY;
-    touchStrength = 1.0;
-  }, { passive: true });
-
-  window.addEventListener("touchmove", (e) => {
-    const t = e.touches[0];
-    targetMouse.x = t.clientX;
-    targetMouse.y = t.clientY;
-    // Keep ripple alive while dragging
-    touchPoint.x = t.clientX;
-    touchPoint.y = t.clientY;
-    if (touchStrength < 0.3) touchStrength = 0.5;
-  }, { passive: true });
-
-  // touchend — let it decay naturally (no reset)
+    window.addEventListener("mousedown", (e) => {
+      touchPoint.x = e.clientX;
+      touchPoint.y = e.clientY;
+      touchStrength = 1.0;
+    });
+  }
+  // No touch events on mobile — shader is purely ambient
 
   // ── Resize (debounced) ─────────────────────────────────────
   let resizeTimer;
   function resize() {
-    // Render at reduced resolution on mobile for performance (0.75 = ~44% fewer pixels)
     const dpr = isMobile ? 0.75 : Math.min(window.devicePixelRatio || 1, 1.25);
     const w = window.innerWidth;
     const h = window.innerHeight;
 
-    // Scale canvas internal resolution by Device Pixel Ratio (fixes low-res blur)
     if (canvas.width !== Math.floor(w * dpr) || canvas.height !== Math.floor(h * dpr)) {
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
 
-      // Keep CSS size identical to viewport
       canvas.style.width = w + "px";
       canvas.style.height = h + "px";
 
@@ -330,27 +279,25 @@ function initBgShader() {
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-  // ── Render loop & Smart Loading ────────────────────────────
+  // ── Render loop ────────────────────────────────────────────
   const t0 = performance.now();
   let lastFrame = 0;
   let isVisible = false;
   let animationFrameId = null;
 
   function render(now) {
-    if (!isVisible) return; // Stop the loop if not visible
+    if (!isVisible) return;
 
-    // Frame budget: ~30fps mobile (33ms) to save battery, ~60fps desktop (16ms)
     const frameBudget = isMobile ? 33 : 16;
     if (now - lastFrame >= frameBudget) {
       lastFrame = now;
 
-      // Smooth mouse interpolation (spring-damper)
-      mouse.x += (targetMouse.x - mouse.x) * 0.06;
-      mouse.y += (targetMouse.y - mouse.y) * 0.06;
-
-      // Decay ripple strength
-      touchStrength *= 0.97;
-      if (touchStrength < 0.005) touchStrength = 0;
+      if (!isMobile) {
+        mouse.x += (targetMouse.x - mouse.x) * 0.04;
+        mouse.y += (targetMouse.y - mouse.y) * 0.04;
+        touchStrength *= 0.97;
+        if (touchStrength < 0.005) touchStrength = 0;
+      }
 
       gl.uniform1f(loc.time, (now - t0) * 0.001);
       gl.uniform2f(loc.mouse, mouse.x, mouse.y);
@@ -363,12 +310,9 @@ function initBgShader() {
   }
 
   // ── Always-on rendering ─────────────────────────────────────
-  // Shader is visible on ALL devices including mobile.
-  // Mobile uses simplified shader + low DPR + 30fps for smooth performance.
   if (isMobile) {
     canvas.style.opacity = "0";
-    canvas.style.transition = "opacity 0.8s ease-in-out";
-    // Fade in after first frame renders — full opacity, shader alpha handles transparency
+    canvas.style.transition = "opacity 1s ease-in-out";
     requestAnimationFrame(() => { canvas.style.opacity = "1"; });
   }
 
