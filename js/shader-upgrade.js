@@ -29,12 +29,12 @@ function initHighResUpgrade(img) {
     }
     if (w <= 1024) {
       // Tablet range
-      if (aspect > 1.2) return 'shaders/desktop 19:6/landsacpe screen .jpeg'; // Landscape tablet
+      if (aspect > 1.2) return 'shaders/desktop 19:6/ screen .jpeg'; // Landscape tablet
       return 'shaders/tablets/tablets.png'; // Portrait tablet
     }
     
     // Desktop range (> 1024)
-    return 'shaders/desktop 19:6/landsacpe screen .jpeg';
+    return 'shaders/tablets/tablets.png';
   }
 
   var hiResSrc = getShaderSrc();

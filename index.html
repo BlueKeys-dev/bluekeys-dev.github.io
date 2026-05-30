@@ -118,33 +118,33 @@
       animation: headerReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    .gallery-item:nth-child(1) .reveal-curtain,
-    .gallery-item:nth-child(1) .image-zoom {
+    .gallery-item:nth-child(6n+1) .reveal-curtain,
+    .gallery-item:nth-child(6n+1) .image-zoom {
       animation-delay: 0.15s;
     }
 
-    .gallery-item:nth-child(2) .reveal-curtain,
-    .gallery-item:nth-child(2) .image-zoom {
+    .gallery-item:nth-child(6n+2) .reveal-curtain,
+    .gallery-item:nth-child(6n+2) .image-zoom {
       animation-delay: 0.25s;
     }
 
-    .gallery-item:nth-child(3) .reveal-curtain,
-    .gallery-item:nth-child(3) .image-zoom {
+    .gallery-item:nth-child(6n+3) .reveal-curtain,
+    .gallery-item:nth-child(6n+3) .image-zoom {
       animation-delay: 0.35s;
     }
 
-    .gallery-item:nth-child(4) .reveal-curtain,
-    .gallery-item:nth-child(4) .image-zoom {
+    .gallery-item:nth-child(6n+4) .reveal-curtain,
+    .gallery-item:nth-child(6n+4) .image-zoom {
       animation-delay: 0.45s;
     }
 
-    .gallery-item:nth-child(5) .reveal-curtain,
-    .gallery-item:nth-child(5) .image-zoom {
+    .gallery-item:nth-child(6n+5) .reveal-curtain,
+    .gallery-item:nth-child(6n+5) .image-zoom {
       animation-delay: 0.55s;
     }
 
-    .gallery-item:nth-child(6) .reveal-curtain,
-    .gallery-item:nth-child(6) .image-zoom {
+    .gallery-item:nth-child(6n+6) .reveal-curtain,
+    .gallery-item:nth-child(6n+6) .image-zoom {
       animation-delay: 0.65s;
     }
 
@@ -828,22 +828,6 @@
             </div>
           </div>
 
-          <!-- Item 3: Precision Mouse (Landscape) -->
-          <div
-            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
-            data-purpose="gallery-tile" data-reveal="fade-up">
-            <div class="relative overflow-hidden">
-              <img alt="BlueKeys Bluetooth Mouse and Air Mouse interface" class="w-full h-auto image-zoom"
-                src="light/landscape/mouse.webp" width="2400" height="1080" decoding="async" loading="lazy" />
-              <!-- Staggered horizontal curtain wipe reveal -->
-              <div class="reveal-curtain"></div>
-              <!-- Minimalist Transparent Caption Overlaid (Bottom-Centered, Small Cute Grey Text) -->
-              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
-                <span class="caption-text">Precision Mouse</span>
-              </div>
-            </div>
-          </div>
-
           <!-- Item 4: Clipboard Sharing (Portrait) -->
           <div
             class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
@@ -871,27 +855,217 @@
               <!-- Staggered horizontal curtain wipe reveal -->
               <div class="reveal-curtain"></div>
               <!-- Minimalist Transparent Caption Overlaid (Bottom-Centered, Small Cute Grey Text) -->
-              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
+              <div class="absolute bottom-3 left-0 right-0 z-10 text-center">
                 <span class="caption-text">Media Controls</span>
               </div>
             </div>
           </div>
-
-          <!-- Item 6: Multi-Device Share (Portrait) -->
+          <!-- Item: Bluetooth Share (Portrait) -->
           <div
             class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
             data-purpose="gallery-tile" data-reveal="fade-up">
             <div class="relative overflow-hidden">
-              <img alt="BlueKeys local Bluetooth connection setup and share screen" class="w-full h-auto image-zoom"
-                src="light/share.jpg" width="600" height="1281" decoding="async" loading="lazy" />
-              <!-- Staggered horizontal curtain wipe reveal -->
+              <img alt="BlueKeys Bluetooth file and connection sharing" class="w-full h-auto image-zoom"
+                src="light/new/portrait%20ratio%20images/bluetooh%20share.jpg" width="1080" height="2400" decoding="async" loading="lazy" />
               <div class="reveal-curtain"></div>
-              <!-- Minimalist Transparent Caption Overlaid (Bottom-Centered, Small Cute Grey Text) -->
               <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
-                <span class="caption-text">Multi-Device Share</span>
+                <span class="caption-text">Bluetooth Share</span>
               </div>
             </div>
           </div>
+
+          <!-- Item 11: Precision Mouse Settings (Landscape) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys Bluetooth mouse control options" class="w-full h-auto image-zoom"
+                src="light/new/landscape%20ratio%20images/mouse.png" width="2400" height="1080" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+              <div class="absolute top-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Precision Mouse</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 12: Clipboard Sharing (Portrait) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys shared clipboard management screen" class="w-full h-auto image-zoom"
+                src="light/new/portrait%20ratio%20images/clipboard.jpg" width="1080" height="2292" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Clipboard Sync</span>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Item 14: Rotary Dial Controls (Portrait) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys interactive circular dial control" class="w-full h-auto image-zoom"
+                src="light/new/portrait%20ratio%20images/dial.png" width="1080" height="2310" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+              <div class="absolute top-67 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Rotary Dial</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 15: Smart Word Suggestions (Landscape) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys AI predictive word completion bar" class="w-full h-auto image-zoom"
+                src="light/new/landscape%20ratio%20images/suggestions.jpg" width="2400" height="1080" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+              <div class="absolute top-1 left-0 right-0 z-10 text-center">
+                <span class="caption-text">workspace keyboard</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 18: Keyboard Layouts (Portrait) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys portrait keyboard customization" class="w-full h-auto image-zoom"
+                src="light/new/portrait%20ratio%20images/keyboard.jpg" width="1080" height="2310" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+            </div>
+          </div>
+
+          <!-- Item 19: Trackpad Gestures Workspace (Landscape) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys multi-touch trackpad configuration" class="w-full h-auto image-zoom"
+                src="light/new/landscape%20ratio%20images/trackpad.jpg" width="2400" height="1080" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+              <div class="absolute top-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">trackpad gestures and scroll</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 22: Media Remote Keys (Portrait) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys pocket media buttons controller" class="w-full h-auto image-zoom"
+                src="light/new/portrait%20ratio%20images/media.jpg" width="1080" height="2310" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+              <div class="absolute top-10 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Media Playback</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 23: Text Predictions & Vocabulary (Landscape) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys intelligent vocabulary matching list" class="w-full h-auto image-zoom"
+                src="light/new/landscape%20ratio%20images/word.png" width="2400" height="1080" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+ 
+            </div>
+          </div>
+
+          <!-- Item 24: Global App Preferences (Portrait) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys advanced settings dashboard" class="w-full h-auto image-zoom"
+                src="light/new/portrait%20ratio%20images/settings.jpg" width="1080" height="2400" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Global Settings</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 25: First Setup Guide (Portrait) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys simple onboarding process setup screens" class="w-full h-auto image-zoom"
+                src="light/new/portrait%20ratio%20images/setup.png" width="1080" height="2310" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Onboarding Setup</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 26: File Transfer Setup (Portrait) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys mobile fast sharing settings screen" class="w-full h-auto image-zoom"
+                src="light/new/portrait%20ratio%20images/share.jpg" width="1080" height="2310" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">File Sharing</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 27: Touch Sensitive Trackpad (Portrait) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys gesture touch active area layout" class="w-full h-auto image-zoom"
+                src="light/new/portrait%20ratio%20images/trackpad.jpg" width="1080" height="2310" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Trackpad Control</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 28: Connection Handshake Protocol (Portrait) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys real-time synchronization link interface" class="w-full h-auto image-zoom"
+                src="light/new/portrait%20ratio%20images/transfer.jpg" width="1080" height="2310" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Device Sync</span>
+              </div>
+            </div>
+          </div>
+
+                    <!-- Item 16: User Feedback Submission (Portrait) -->
+          <div
+            class="relative overflow-hidden rounded-lg border border-black/5 bg-white/40 shadow-md break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-secondary/20"
+            data-purpose="gallery-tile" data-reveal="fade-up">
+            <div class="relative overflow-hidden">
+              <img alt="BlueKeys feedback collection layout" class="w-full h-auto image-zoom"
+                src="light/new/portrait%20ratio%20images/feedback.jpg" width="1080" height="2400" decoding="async" loading="lazy" />
+              <div class="reveal-curtain"></div>
+              <div class="absolute bottom-2 left-0 right-0 z-10 text-center">
+                <span class="caption-text">Feedback Channel</span>
+              </div>
+            </div>
+          </div>
+
 
         </section>
       </main>
@@ -1066,8 +1240,8 @@
       <p class="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-primary/35">© 2026 BlueKeys. Engineered
         for Nothing.</p>
       <p class="mt-2"><a href="privacy.html"
-          class="text-[10px] sm:text-xs font-semibold tracking-[0.15em] uppercase text-neutral-800/40 hover:text-neutral-800 transition-colors">Privacy
-          Policy</a></p>
+          class="text-[10px] sm:text-xs font-semibold tracking-[0.15em] uppercase text-neutral-800/40 hover:text-neutral-800 transition-colors"><u>Privacy Policy</u>
+        </a></p>
     </footer>
 
   </div>
