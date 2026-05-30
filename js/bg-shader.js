@@ -30,8 +30,11 @@ function initBgShader() {
   `;
 
   // ── Fragment Shader ────────────────────────────────────────
+  const isMobile = window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent);
+
   const fsSource = `
     precision mediump float;
+    ${isMobile ? '#define IS_MOBILE' : ''}
     varying vec2 v_uv;
 
     uniform vec2  u_resolution;
@@ -74,16 +77,24 @@ function initBgShader() {
       return 130.0 * dot(m, g);
     }
 
-    // ─── Fractional Brownian Motion (3 octaves) ──────────────────────
+    // ─── Fractional Brownian Motion ──────────────────────
     float fbm(vec2 p) {
       float value = 0.0;
       float amp   = 0.5;
       float freq  = 1.0;
-      for (int i = 0; i < 3; i++) {
-        value += amp * snoise(p * freq);
-        freq  *= 2.0;
-        amp   *= 0.5;
-      }
+      #ifdef IS_MOBILE
+        for (int i = 0; i < 2; i++) { // Only 2 octaves on mobile
+          value += amp * snoise(p * freq);
+          freq  *= 2.0;
+          amp   *= 0.5;
+        }
+      #else
+        for (int i = 0; i < 3; i++) {
+          value += amp * snoise(p * freq);
+          freq  *= 2.0;
+          amp   *= 0.5;
+        }
+      #endif
       return value;
     }
 
@@ -95,7 +106,6 @@ function initBgShader() {
       float t = u_time * 1.0; // Normal time
 
       // ── Touch/Click ripple warp ────────────────────────────
-      // Do the warp early so we don't calculate expensive flow twice
       vec2 touch = u_touch.xy / u_resolution;
       touch.x *= aspect;
       touch.y = 1.0 - touch.y;
@@ -110,7 +120,7 @@ function initBgShader() {
       st += dir * ripple * 0.12; 
 
       // ── Increased Fluid Amount ──────────────────────────
-      vec2 base = st * 0.8; // Zoomed in slightly to show more fluid movement
+      vec2 base = st * 0.8; 
       
       // ── Breathing pulse ────────────────────────────────────
       float breath = sin(t * 0.5) * 0.30 + 1.0;
@@ -122,22 +132,27 @@ function initBgShader() {
         fbm(base + vec2(-t * 0.03, t * 0.05))
       );
       
-      // Second layer (micro) - reduced complexity for performance
-      vec2 r = vec2(
-        fbm(base + 4.0 * q + vec2(t * 0.06, t * 0.04)),
-        fbm(base + 4.0 * q + vec2(-t * 0.04, -t * 0.06))
-      );
+      #ifdef IS_MOBILE
+        // Skip second layer entirely on mobile
+        float flow = fbm(base + 3.0 * q);
+        float detail = 0.0;
+      #else
+        // Second layer (micro)
+        vec2 r = vec2(
+          fbm(base + 4.0 * q + vec2(t * 0.06, t * 0.04)),
+          fbm(base + 4.0 * q + vec2(-t * 0.04, -t * 0.06))
+        );
+        // The final flow field
+        float flow = fbm(base + 5.0 * r);
 
-      // The final flow field
-      float flow = fbm(base + 5.0 * r);
-
-      // ── Spray / Fluid Particles ────────────────────────
-      float particleNoise = snoise(st * 50.0 - t * 1.5 + flow * 5.0);
-      float spray = smoothstep(0.80, 0.98, particleNoise) * 0.9;
+        // Spray / detail only on desktop
+        float particleNoise = snoise(st * 50.0 - t * 1.5 + flow * 5.0);
+        float spray = smoothstep(0.80, 0.98, particleNoise) * 0.9;
+        float detail = snoise(st * 8.0 + t * 0.2 + flow * 0.5) * 0.1;
+      #endif
 
       // ── High-frequency grain/texture layer ────────────────────────
       float grain = fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453) * 0.035;
-      float detail = snoise(st * 8.0 + t * 0.2 + flow * 0.5) * 0.1;
 
       // ── Mouse hover — soft gradient pull ───────────────────
       vec2 mouse = u_mouse / u_resolution;
@@ -159,11 +174,18 @@ function initBgShader() {
       vec3 color = mix(col1, col3, smoothstep(-0.6, 0.8, f));
       
       // Increased fluid coloring
-      color = mix(color, col2, smoothstep(0.1, 1.2, r.x + r.y) * 0.75);
+      #ifdef IS_MOBILE
+        color = mix(color, col2, smoothstep(0.1, 1.2, q.x + q.y) * 0.75); // Use q instead of r
+      #else
+        color = mix(color, col2, smoothstep(0.1, 1.2, r.x + r.y) * 0.75);
+      #endif
+      
       color = mix(color, col4, smoothstep(0.5, 1.5, q.x + q.y) * 0.4); 
       
-      // Add the fluid spray/particles over the top
-      color = mix(color, colSpray, spray);
+      #ifndef IS_MOBILE
+        // Add the fluid spray/particles over the top
+        color = mix(color, colSpray, spray);
+      #endif
 
       // Add film grain
       color -= grain;
@@ -179,7 +201,11 @@ function initBgShader() {
       // ── Vertical alpha fade (mask at bottom) ───────────────
       float alpha = smoothstep(0.0, 0.7, v_uv.y + 0.25);
 
-      gl_FragColor = vec4(color, alpha * 0.85);
+      #ifdef IS_MOBILE
+        gl_FragColor = vec4(color, alpha);
+      #else
+        gl_FragColor = vec4(color, alpha * 0.85);
+      #endif
     }
   `;
 
@@ -224,18 +250,18 @@ function initBgShader() {
   // ── Uniforms ───────────────────────────────────────────────
   const loc = {
     resolution: gl.getUniformLocation(program, "u_resolution"),
-    time:       gl.getUniformLocation(program, "u_time"),
-    mouse:      gl.getUniformLocation(program, "u_mouse"),
-    touch:      gl.getUniformLocation(program, "u_touch"),
+    time: gl.getUniformLocation(program, "u_time"),
+    mouse: gl.getUniformLocation(program, "u_mouse"),
+    touch: gl.getUniformLocation(program, "u_touch"),
   };
 
   // ── Pointer state ──────────────────────────────────────────
   const cx = window.innerWidth / 2;
   const cy = window.innerHeight / 2;
 
-  let mouse       = { x: cx, y: cy };
-  let targetMouse  = { x: cx, y: cy };
-  let touchPoint   = { x: cx, y: cy };
+  let mouse = { x: cx, y: cy };
+  let targetMouse = { x: cx, y: cy };
+  let touchPoint = { x: cx, y: cy };
   let touchStrength = 0;
 
   // Mouse
@@ -256,9 +282,9 @@ function initBgShader() {
     const t = e.touches[0];
     targetMouse.x = t.clientX;
     targetMouse.y = t.clientY;
-    touchPoint.x  = t.clientX;
-    touchPoint.y  = t.clientY;
-    touchStrength  = 1.0;
+    touchPoint.x = t.clientX;
+    touchPoint.y = t.clientY;
+    touchStrength = 1.0;
   }, { passive: true });
 
   window.addEventListener("touchmove", (e) => {
@@ -266,8 +292,8 @@ function initBgShader() {
     targetMouse.x = t.clientX;
     targetMouse.y = t.clientY;
     // Keep ripple alive while dragging
-    touchPoint.x  = t.clientX;
-    touchPoint.y  = t.clientY;
+    touchPoint.x = t.clientX;
+    touchPoint.y = t.clientY;
     if (touchStrength < 0.3) touchStrength = 0.5;
   }, { passive: true });
 
@@ -276,21 +302,20 @@ function initBgShader() {
   // ── Resize (debounced) ─────────────────────────────────────
   let resizeTimer;
   function resize() {
-    // Cap devicePixelRatio for performance on low-end devices/mobile
-    const isMobile = window.innerWidth < 768;
-    const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
+    // Render at reduced resolution on mobile for performance (0.75 = ~44% fewer pixels)
+    const dpr = isMobile ? 0.75 : Math.min(window.devicePixelRatio || 1, 1.25);
     const w = window.innerWidth;
     const h = window.innerHeight;
-    
+
     // Scale canvas internal resolution by Device Pixel Ratio (fixes low-res blur)
     if (canvas.width !== Math.floor(w * dpr) || canvas.height !== Math.floor(h * dpr)) {
-      canvas.width  = Math.floor(w * dpr);
+      canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
-      
+
       // Keep CSS size identical to viewport
-      canvas.style.width  = w + "px";
+      canvas.style.width = w + "px";
       canvas.style.height = h + "px";
-      
+
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.uniform2f(loc.resolution, canvas.width, canvas.height);
     }
@@ -313,8 +338,10 @@ function initBgShader() {
 
   function render(now) {
     if (!isVisible) return; // Stop the loop if not visible
-    // Throttle to ~60 fps max (16 ms frame budget) to save battery/perf
-    if (now - lastFrame >= 16) {
+
+    // Frame budget: ~30fps mobile (33ms) to save battery, ~60fps desktop (16ms)
+    const frameBudget = isMobile ? 33 : 16;
+    if (now - lastFrame >= frameBudget) {
       lastFrame = now;
 
       // Smooth mouse interpolation (spring-damper)
@@ -331,49 +358,23 @@ function initBgShader() {
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
-    
+
     animationFrameId = requestAnimationFrame(render);
   }
 
-  // ── Smart Loading (Intersection Observer) ────────────────────
-  // We observe the features section so the shader only runs when the user reaches it.
-  const featuresSection = document.querySelector(".features-section");
-
-  if (featuresSection) {
-    if (window.innerWidth < 768) {
-      canvas.style.opacity = "0"; // Hide instantly on mobile initially
-      canvas.style.transition = "opacity 0.6s ease-in-out";
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        isVisible = entry.isIntersecting;
-        
-        // On mobile, completely hide the canvas when on the welcome page
-        if (window.innerWidth < 768) {
-          canvas.style.opacity = isVisible ? "0.5" : "0";
-        }
-
-        if (isVisible) {
-          if (!animationFrameId) {
-            lastFrame = performance.now();
-            animationFrameId = requestAnimationFrame(render);
-          }
-        } else {
-          if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
-            animationFrameId = null;
-          }
-        }
-      });
-    }, { threshold: 0.01 });
-
-    observer.observe(featuresSection);
-  } else {
-    // Fallback if loaded directly without the dynamic wrapper
-    isVisible = true;
-    animationFrameId = requestAnimationFrame(render);
+  // ── Always-on rendering ─────────────────────────────────────
+  // Shader is visible on ALL devices including mobile.
+  // Mobile uses simplified shader + low DPR + 30fps for smooth performance.
+  if (isMobile) {
+    canvas.style.opacity = "0";
+    canvas.style.transition = "opacity 0.8s ease-in-out";
+    // Fade in after first frame renders — full opacity, shader alpha handles transparency
+    requestAnimationFrame(() => { canvas.style.opacity = "1"; });
   }
+
+  isVisible = true;
+  lastFrame = performance.now();
+  animationFrameId = requestAnimationFrame(render);
 }
 
 // Initialize immediately if DOM is already parsed, otherwise wait
