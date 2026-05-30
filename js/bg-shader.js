@@ -135,21 +135,23 @@ function initBgShader() {
       // Gentle warp
       float flow = fbm(base + 1.8 * q);
 
-      // ── Colour palette ─────────────────────────────────────
-      vec3 brandBlue = vec3(0.20, 0.65, 0.90);   // strong brand blue
-      vec3 skyBlue   = vec3(0.40, 0.75, 0.95);   // bright sky
-      vec3 deepBlue  = vec3(0.10, 0.45, 0.80);   // rich deep accent
+      // ── Colour palette (Matched to Website #6dcdf9) ──────
+      vec3 col1 = vec3(0.980, 0.976, 0.965);   // off-white / transparent base
+      vec3 col2 = vec3(0.427, 0.804, 0.976);   // #6dcdf9 (Primary brand blue)
+      vec3 col3 = vec3(0.900, 0.960, 0.990);   // Very soft icy highlight
+      vec3 col4 = vec3(0.300, 0.650, 0.850);   // Deeper subtle accent
 
       // Calculate how "fluid" this pixel is
       float f = flow * breath;
       float fluidIntensity = smoothstep(-0.2, 0.8, f);
       
-      // Base color is sky blue
-      vec3 color = skyBlue;
+      // We start with the soft icy sky as the base fluid color
+      vec3 color = col3;
       
-      // Mix in brand blue and deep blue based on the warp
-      color = mix(color, brandBlue, smoothstep(0.2, 1.1, q.x + q.y));
-      color = mix(color, deepBlue, smoothstep(0.5, 1.5, q.x * q.y + 0.4));
+      // Gently mix in the brand blue
+      color = mix(color, col2, smoothstep(0.2, 1.1, q.x + q.y) * 0.8);
+      // Touch of deep accent in the dense areas
+      color = mix(color, col4, smoothstep(0.6, 1.4, q.x * q.y + 0.5) * 0.3);
 
       #ifndef IS_MOBILE
         // Subtle film grain (desktop only)
@@ -162,12 +164,12 @@ function initBgShader() {
         mouse.y = 1.0 - mouse.y;
         float mDist = distance(st, mouse);
         float hover = smoothstep(0.6, 0.0, mDist) * 0.2;
-        color = mix(color, skyBlue, hover);
+        color = mix(color, col2, hover);
 
         // Ripple colour bloom
         float bloom = exp(-tDist * 8.0) * strength;
-        color = mix(color, vec3(1.0), bloom * 0.3);
-        color = mix(color, skyBlue, bloom * 0.5);
+        color = mix(color, vec3(1.0), bloom * 0.4);
+        color = mix(color, col4, bloom * 0.6);
       #endif
 
       // ── Vertical alpha fade ────────────────────────────────
@@ -178,9 +180,9 @@ function initBgShader() {
       float fade = smoothstep(0.0, 0.6, v_uv.y + 0.1);
 
       #ifdef IS_MOBILE
-        gl_FragColor = vec4(color, alpha * fade * 0.6); // 60% opacity max on mobile
+        gl_FragColor = vec4(color, alpha * fade * 0.5); // Subtle visibility on mobile
       #else
-        gl_FragColor = vec4(color, alpha * fade * 0.5); // 50% opacity max on desktop
+        gl_FragColor = vec4(color, alpha * fade * 0.45); // Subtle visibility on desktop
       #endif
     }
   `;
@@ -313,16 +315,55 @@ function initBgShader() {
     animationFrameId = requestAnimationFrame(render);
   }
 
-  // ── Always-on rendering ─────────────────────────────────────
-  if (isMobile) {
-    canvas.style.opacity = "0";
-    canvas.style.transition = "opacity 1s ease-in-out";
-    requestAnimationFrame(() => { canvas.style.opacity = "1"; });
-  }
+  // ── Smart Loading (Intersection Observer) ────────────────────
+  const featuresSection = document.querySelector(".features-section");
 
-  isVisible = true;
-  lastFrame = performance.now();
-  animationFrameId = requestAnimationFrame(render);
+  if (featuresSection) {
+    if (isMobile) {
+      canvas.style.opacity = "0"; // Hide instantly in the hero section
+      canvas.style.transition = "opacity 1.2s ease-in-out";
+    } else {
+      // Desktop: Start invisible and fade in smoothly
+      canvas.style.opacity = "0";
+      canvas.style.transition = "opacity 2s ease-in-out";
+      requestAnimationFrame(() => { canvas.style.opacity = "1"; });
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        isVisible = entry.isIntersecting;
+        
+        // On mobile, completely hide the canvas when in the top hero section
+        if (isMobile) {
+          canvas.style.opacity = isVisible ? "1" : "0";
+        }
+
+        if (isVisible) {
+          if (!animationFrameId) {
+            lastFrame = performance.now();
+            animationFrameId = requestAnimationFrame(render);
+          }
+        } else {
+          // Cancel render loop to save battery when not visible
+          if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+          }
+        }
+      });
+    }, { threshold: 0.01 });
+
+    observer.observe(featuresSection);
+  } else {
+    // Fallback if loaded directly without the dynamic wrapper
+    isVisible = true;
+    if (isMobile) {
+      canvas.style.opacity = "0";
+      canvas.style.transition = "opacity 1.2s ease-in-out";
+      requestAnimationFrame(() => { canvas.style.opacity = "1"; });
+    }
+    animationFrameId = requestAnimationFrame(render);
+  }
 }
 
 // Initialize immediately if DOM is already parsed, otherwise wait
