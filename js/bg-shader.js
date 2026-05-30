@@ -74,12 +74,12 @@ function initBgShader() {
       return 130.0 * dot(m, g);
     }
 
-    // ─── Fractional Brownian Motion (4 octaves) ──────────────────────
+    // ─── Fractional Brownian Motion (3 octaves) ──────────────────────
     float fbm(vec2 p) {
       float value = 0.0;
       float amp   = 0.5;
       float freq  = 1.0;
-      for (int i = 0; i < 4; i++) {
+      for (int i = 0; i < 3; i++) {
         value += amp * snoise(p * freq);
         freq  *= 2.0;
         amp   *= 0.5;
@@ -92,11 +92,27 @@ function initBgShader() {
       vec2 st = gl_FragCoord.xy / u_resolution.xy;
       st.x *= aspect;
       
+      float t = u_time * 1.0; // Normal time
+
+      // ── Touch/Click ripple warp ────────────────────────────
+      // Do the warp early so we don't calculate expensive flow twice
+      vec2 touch = u_touch.xy / u_resolution;
+      touch.x *= aspect;
+      touch.y = 1.0 - touch.y;
+      float strength = u_touch.z;
+
+      float tDist = distance(st, touch);
+      float ripple = sin(tDist * 30.0 - t * 6.0)
+                   * exp(-tDist * 5.0)
+                   * strength;
+      
+      vec2 dir = (tDist > 0.001) ? normalize(st - touch) : vec2(0.0);
+      st += dir * ripple * 0.12; 
+
       // ── Increased Fluid Amount ──────────────────────────
       vec2 base = st * 0.8; // Zoomed in slightly to show more fluid movement
       
       // ── Breathing pulse ────────────────────────────────────
-      float t = u_time * 1.0; // Normal time
       float breath = sin(t * 0.5) * 0.30 + 1.0;
 
       // ── Normal Domain Warping ──────────────────────────
@@ -106,23 +122,16 @@ function initBgShader() {
         fbm(base + vec2(-t * 0.03, t * 0.05))
       );
       
-      // Second layer (micro)
+      // Second layer (micro) - reduced complexity for performance
       vec2 r = vec2(
-        fbm(base + 6.0 * q + vec2(t * 0.06, t * 0.04)),
-        fbm(base + 6.0 * q + vec2(-t * 0.04, -t * 0.06))
-      );
-      
-      // Third layer (ultra micro)
-      vec2 s = vec2(
-        fbm(base + 8.0 * r + vec2(t * 0.08, t * 0.05)),
-        fbm(base + 8.0 * r + vec2(-t * 0.05, -t * 0.07))
+        fbm(base + 4.0 * q + vec2(t * 0.06, t * 0.04)),
+        fbm(base + 4.0 * q + vec2(-t * 0.04, -t * 0.06))
       );
 
-      // The final warped flow field
-      float flow = fbm(base + 6.0 * s);
+      // The final flow field
+      float flow = fbm(base + 5.0 * r);
 
       // ── Spray / Fluid Particles ────────────────────────
-      // Very high frequency noise moving rapidly to simulate tiny spray particles
       float particleNoise = snoise(st * 50.0 - t * 1.5 + flow * 5.0);
       float spray = smoothstep(0.80, 0.98, particleNoise) * 0.9;
 
@@ -137,24 +146,6 @@ function initBgShader() {
       float mDist = distance(st, mouse);
       float hover = smoothstep(0.6, 0.0, mDist) * 0.25;
 
-      // ── Touch/Click ripple warp ────────────────────────────
-      vec2 touch = u_touch.xy / u_resolution;
-      touch.x *= aspect;
-      touch.y = 1.0 - touch.y;
-      float strength = u_touch.z;
-
-      float tDist = distance(st, touch);
-      // Expanding ring ripple with Chromatic Aberration potential
-      float ripple = sin(tDist * 30.0 - t * 6.0)
-                   * exp(-tDist * 5.0)
-                   * strength;
-      
-      vec2 dir = (tDist > 0.001) ? normalize(st - touch) : vec2(0.0);
-      st += dir * ripple * 0.12; // Slightly stronger warp
-
-      // Recompute flow at warped position for visible distortion
-      float warpedFlow = fbm(st * 0.8 + 6.0 * s);
-
       // ── Colour palette ─────────────────────────────────────
       vec3 col1 = vec3(0.980, 0.976, 0.965);   // #FAF9F6  off-white
       vec3 col2 = vec3(0.557, 0.792, 0.902);   // #8ecae6  brand blue
@@ -162,8 +153,8 @@ function initBgShader() {
       vec3 col4 = vec3(0.300, 0.600, 0.800);   // Deep blue for accents
       vec3 colSpray = vec3(0.9, 0.95, 1.0);    // Bright icy white for spray
 
-      // Mix colours from warped flow + detail + breath
-      float f = warpedFlow * breath + detail;
+      // Mix colours from flow + detail + breath
+      float f = flow * breath + detail;
       
       vec3 color = mix(col1, col3, smoothstep(-0.6, 0.8, f));
       
@@ -285,7 +276,9 @@ function initBgShader() {
   // ── Resize (debounced) ─────────────────────────────────────
   let resizeTimer;
   function resize() {
-    const dpr = window.devicePixelRatio || 1;
+    // Cap devicePixelRatio for performance on low-end devices/mobile
+    const isMobile = window.innerWidth < 768;
+    const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
     const w = window.innerWidth;
     const h = window.innerHeight;
     
@@ -320,9 +313,8 @@ function initBgShader() {
 
   function render(now) {
     if (!isVisible) return; // Stop the loop if not visible
-
-    // Throttle to ~80 fps max (12 ms frame budget)
-    if (now - lastFrame >= 12) {
+    // Throttle to ~60 fps max (16 ms frame budget) to save battery/perf
+    if (now - lastFrame >= 16) {
       lastFrame = now;
 
       // Smooth mouse interpolation (spring-damper)
