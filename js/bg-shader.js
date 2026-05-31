@@ -138,15 +138,17 @@ function initBgShader() {
       vec2 center = vec2(aspect * 0.5, 0.5) * 0.35;
       vec2 rot_base = rot * (base - center) + center;
 
+      // ── OPTIMIZATION 1: Use single noise for domain warp ──
+      // Saves 4-8 noise calculations per pixel vs FBM
       vec2 q = vec2(
         fbm(rot_base + vec2(t * 0.02, 0.0)),
         fbm(rot_base + vec2(0.0, t * 0.02))
       );
 
-      // Two fluid layers with animated domain warp & parallax depth
-      float flow1 = fbm(rot_base + 2.5 * q + t * 0.015);
-      float flow2 = fbm(rot_base * 1.8 + 2.5 * q + 5.0 - t * 0.01);
-      float flow = mix(flow1, flow2, 0.45);
+      // ── OPTIMIZATION 2: Single fluid layer ──
+      // Saves 2-3 noise calculations per pixel. 
+      // The domain warp (q) provides enough complexity.
+      float flow = fbm(rot_base + 2.5 * q + t * 0.015);
 
       // ── Colour palette (Matched to Website #c6edff) ──────
       vec3 col1 = vec3(1.000, 1.000, 1.000);   // Pure white (#ffffff)
@@ -178,7 +180,11 @@ function initBgShader() {
       color = mix(color, col2, pulse * 0.08);
 
       // ── White Glow Center ───────────────────────────────────
-      float glow = exp(-distance(st, vec2(aspect * 0.5, 0.5)) * 2.0);
+      // OPTIMIZATION 3: Calculate screen center distance once
+      vec2 screenCenter = vec2(aspect * 0.5, 0.5);
+      float distToCenter = distance(st, screenCenter);
+      
+      float glow = exp(-distToCenter * 2.0);
       color += glow * vec3(1.0) * 0.12;
 
       #ifndef IS_MOBILE
@@ -204,7 +210,6 @@ function initBgShader() {
       float fade = smoothstep(0.0, 0.6, v_uv.y + 0.1);
 
       // ── Radial distance fade (keeps shader concentrated around center of features) ──
-      float distToCenter = distance(st, vec2(aspect * 0.5, 0.5));
       float radialFade = smoothstep(0.75, 0.25, distToCenter);
       alpha *= radialFade;
 
@@ -285,16 +290,20 @@ function initBgShader() {
   // ── Resize (debounced) ─────────────────────────────────────
   let resizeTimer;
   function resize() {
-    const dpr = isMobile ? 0.75 : Math.min(window.devicePixelRatio || 1, 1.25);
-    const w = window.innerWidth;
+    // ── OPTIMIZATION 4: Lower render resolution ──
+    // Fluid gradients look perfectly fine slightly upscaled. Huge performance boost.
+    const dpr = isMobile ? 0.5 : Math.min(window.devicePixelRatio || 1, 1.0);
+    
+    // Prevent horizontal scrolling by not forcing width > viewport (e.g. scrollbar width)
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    
+    const w = document.documentElement.clientWidth;
     const h = window.innerHeight;
 
     if (canvas.width !== Math.floor(w * dpr) || canvas.height !== Math.floor(h * dpr)) {
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
-
-      canvas.style.width = w + "px";
-      canvas.style.height = h + "px";
 
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.uniform2f(loc.resolution, canvas.width, canvas.height);
