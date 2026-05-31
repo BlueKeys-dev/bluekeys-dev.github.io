@@ -86,7 +86,7 @@
       }
 
       body {
-        background-color: #f5f5f7bc;
+        background-color: transparent;
         background-image:
           radial-gradient(at 0% 0%, rgba(142, 202, 230, 0.12) 0px, transparent 50%),
           radial-gradient(at 100% 100%, rgba(142, 202, 230, 0.08) 0px, transparent 50%);
@@ -109,6 +109,22 @@
         background: radial-gradient(ellipse 80% 60% at 50% 30%,
             rgba(142, 202, 230, 0.12) 0%,
             transparent 70%);
+      }
+
+      /* Glass Effect Overlay (above shaders, below content) */
+      .glass-effect-overlay {
+        position: fixed; /* Keep pinned to viewport during scroll */
+        inset: -20px; /* Slight overflow to eliminate blurred boundary artifacts */
+        z-index: -3; /* Above shaders (-5) and below text/cards/images (auto or positive) */
+        pointer-events: none;
+        background: 
+          rgba(169, 241, 255, 0.778),
+          linear-gradient(0deg, rgba(75, 165, 255, 0.775), rgba(255, 255, 255, 0.77)), 
+          rgba(160, 209, 245, 0.18); /* Softer semi-transparent frosted base */
+        background-blend-mode: screen;
+        filter: blur(2px);
+        backdrop-filter: blur(2px); /* Very low blur to keep welcome page background sharp and recognizable */
+        -webkit-backdrop-filter: blur(1.5px);
       }
 
       /* Shared rules for both image and video shader layers */

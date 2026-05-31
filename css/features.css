@@ -4,7 +4,8 @@
    ============================================================ */
 
 /* ---- Reset & Base ---- */
-html, body {
+html,
+body {
   overflow-x: hidden;
   max-width: 100vw;
 }
@@ -20,7 +21,7 @@ html, body {
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #f5f5f7cd;
+  background-color: transparent;
   color: #1a1a1a;
   overflow-x: hidden;
 
@@ -30,7 +31,11 @@ body {
     radial-gradient(at 100% 86%, rgba(77, 183, 232, 0.05) 0px, transparent 50%);
 }
 
-h1, h2, h3, h4, .font-headline {
+h1,
+h2,
+h3,
+h4,
+.font-headline {
   font-family: 'Manrope', sans-serif;
 }
 
@@ -44,8 +49,30 @@ h1, h2, h3, h4, .font-headline {
    SHADER CANVAS
    ============================================================ */
 #shader-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: -5;
+  /* Placed behind the glass overlay (-3) */
   will-change: transform;
-  touch-action: none; /* Prevent scroll hijacking during touch interactions */
+  touch-action: none;
+  /* Prevent scroll hijacking during touch interactions */
+}
+
+/* Glass Effect Overlay (above shaders, below content) */
+.glass-effect-overlay {
+  position: fixed; /* Keep pinned to viewport during scroll */
+  inset: -20px; /* Slight overflow to eliminate blurred boundary artifacts */
+  z-index: -2; /* Above shaders (-5) and below text/cards/images (auto or positive) */
+  pointer-events: none;
+  background: 
+    rgba(109, 209, 255, 0.2),
+    linear-gradient(0deg, rgba(152, 236, 255, 0.845), rgb(255, 255, 255)),
+    rgba(185, 226, 255, 0.816);
+  /* Ice-blue semi-transparent base instead of solid #BFE4FF */
+  background-blend-mode: screen;
+  filter: blur(2px);
+  backdrop-filter: blur(3px); /* Decreased blur to make background shader sharper and more visible */
+  -webkit-backdrop-filter: blur(3px);
 }
 
 /* ============================================================
@@ -121,7 +148,8 @@ h1, h2, h3, h4, .font-headline {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 1.5rem;
-  padding-right: 0.5rem;       /* Prevent bold clipping */
+  padding-right: 0.5rem;
+  /* Prevent bold clipping */
 }
 
 .hero-subtitle {
@@ -178,8 +206,8 @@ h1, h2, h3, h4, .font-headline {
   justify-content: space-between;
   overflow: hidden;
   transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    border-color 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: default;
   contain: layout style paint;
 }
@@ -189,11 +217,9 @@ h1, h2, h3, h4, .font-headline {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(
-    135deg,
-    rgba(231, 241, 246, 0.06) 0%,
-    transparent 60%
-  );
+  background: linear-gradient(135deg,
+      rgba(231, 241, 246, 0.06) 0%,
+      transparent 60%);
   opacity: 0;
   transition: opacity 0.7s ease;
   pointer-events: none;
@@ -214,9 +240,10 @@ h1, h2, h3, h4, .font-headline {
 /* ---- Card Content ---- */
 .card-icon {
   font-size: 2rem;
-  color: #4d626a;           /* secondary */
+  color: #4d626a;
+  /* secondary */
   margin-bottom: 1.25rem;
-  transition: 
+  transition:
     transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
     font-variation-settings 0.4s ease;
 }
@@ -245,10 +272,23 @@ h1, h2, h3, h4, .font-headline {
 }
 
 @keyframes trackpointWobble {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  25%  { transform: translate(3px, -2px) rotate(8deg); }
-  50%  { transform: translate(-3px, 2px) rotate(-6deg); }
-  75%  { transform: translate(1px, 1px) rotate(3deg); }
+
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  25% {
+    transform: translate(3px, -2px) rotate(8deg);
+  }
+
+  50% {
+    transform: translate(-3px, 2px) rotate(-6deg);
+  }
+
+  75% {
+    transform: translate(1px, 1px) rotate(3deg);
+  }
 }
 
 /* 2. Media Widget — Modular Tactile Bounce */
@@ -260,21 +300,40 @@ h1, h2, h3, h4, .font-headline {
 
 .feature-card:hover .icon-widget-glide,
 .feature-card.mobile-animate .icon-widget-glide {
-  animation: 
+  animation:
     widgetSpin 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 1,
-    widgetTactile 0.6s ease-in-out 1 0.8s; /* Spins then one quick bounce */
+    widgetTactile 0.6s ease-in-out 1 0.8s;
+  /* Spins then one quick bounce */
   color: #1a1a1a;
 }
 
 @keyframes widgetTactile {
-  0%, 100% { transform: scale(1, 1) translateY(0); }
-  33%      { transform: scale(1.15, 0.85) translateY(2px); } /* Squash */
-  66%      { transform: scale(0.9, 1.1) translateY(-4px); }   /* Stretch & Lift */
+
+  0%,
+  100% {
+    transform: scale(1, 1) translateY(0);
+  }
+
+  33% {
+    transform: scale(1.15, 0.85) translateY(2px);
+  }
+
+  /* Squash */
+  66% {
+    transform: scale(0.9, 1.1) translateY(-4px);
+  }
+
+  /* Stretch & Lift */
 }
 
 @keyframes widgetSpin {
-  0%   { transform: rotate(0deg) scale(1); }
-  100% { transform: rotate(360deg) scale(1); }
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
 }
 
 /* 3. Clipboard Tactile Tap */
@@ -287,14 +346,30 @@ h1, h2, h3, h4, .font-headline {
 .feature-card:hover .icon-clipboard-tap,
 .feature-card.mobile-animate .icon-clipboard-tap {
   animation: clipboardTap 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1;
-  color: #0ea5e9; /* Sky Blue */
+  color: #0ea5e9;
+  /* Sky Blue */
 }
 
 @keyframes clipboardTap {
-  0%   { transform: translateY(30px) scale(0.8); opacity: 0; }
-  45%  { transform: translateY(-5px) scale(0.05); opacity: 1; } /* Overshoot Rise */
-  75%  { transform: translateY(2px) scale(0.98); } /* Settle Down */
-  100% { transform: translateY(0) scale(1); }
+  0% {
+    transform: translateY(30px) scale(0.8);
+    opacity: 0;
+  }
+
+  45% {
+    transform: translateY(-5px) scale(0.05);
+    opacity: 1;
+  }
+
+  /* Overshoot Rise */
+  75% {
+    transform: translateY(2px) scale(0.98);
+  }
+
+  /* Settle Down */
+  100% {
+    transform: translateY(0) scale(1);
+  }
 }
 
 
@@ -338,8 +413,8 @@ h1, h2, h3, h4, .font-headline {
   pointer-events: none;
   z-index: 0;
   transition: opacity 0.7s ease, transform 0.7s ease;
-  mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 100%);
-  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 100%);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.4) 100%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.4) 100%);
 }
 
 .feature-card:hover .card-background-visual {
@@ -360,16 +435,19 @@ h1, h2, h3, h4, .font-headline {
   object-position: right center;
   object-fit: cover;
 }
+
 .feature-card:hover .card-background--share img {
-  transform: rotate(1deg) translate(3%, 4%) translate3d(0,0,0);
+  transform: rotate(1deg) translate(3%, 4%) translate3d(0, 0, 0);
 }
+
 /* 2. Clipboard Variant (Stacked Negative Tilt) */
 .card-background--clipboard img {
   width: 100%;
   height: 105%;
   object-fit: contain;
   object-position: bottom right;
-  transform: rotate(0deg) translate(0%, 0%); /* Moved slightly to the right */
+  transform: rotate(0deg) translate(0%, 0%);
+  /* Moved slightly to the right */
 }
 
 
@@ -404,8 +482,8 @@ h1, h2, h3, h4, .font-headline {
   justify-content: center;
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-              background 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    background 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sync-ring__pulse {
@@ -436,16 +514,39 @@ h1, h2, h3, h4, .font-headline {
 }
 
 @keyframes syncRingPulse {
-  0%, 100% { transform: scale(0.9); opacity: 0.2; }
-  50% { transform: scale(1.1); opacity: 0.5; }
+
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.2;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 0.5;
+  }
 }
 
 @keyframes syncExchange {
-  0% { transform: rotate(0deg) scale(1); }
-  25% { transform: rotate(15deg) translateX(5px) scale(0.9); }
-  50% { transform: rotate(-15deg) translateX(-5px) scale(1.1); }
-  75% { transform: rotate(5deg) scale(1.05); }
-  100% { transform: rotate(0deg) scale(1); }
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  25% {
+    transform: rotate(15deg) translateX(5px) scale(0.9);
+  }
+
+  50% {
+    transform: rotate(-15deg) translateX(-5px) scale(1.1);
+  }
+
+  75% {
+    transform: rotate(5deg) scale(1.05);
+  }
+
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
 }
 
 
@@ -484,9 +585,9 @@ h1, h2, h3, h4, .font-headline {
   font-size: 1rem;
 }
 
-.sync-ring .material-symbols-outlined { 
-  font-size: 2.5rem; 
-  color: #5f5e5e; 
+.sync-ring .material-symbols-outlined {
+  font-size: 2.5rem;
+  color: #5f5e5e;
   z-index: 1;
 }
 
@@ -498,7 +599,7 @@ h1, h2, h3, h4, .font-headline {
 /* --- Base hidden state for all reveal elements --- */
 [data-reveal] {
   opacity: 0;
-  transition: 
+  transition:
     opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.9s cubic-bezier(0.19, 1, 0.4, 1);
 }
@@ -530,7 +631,7 @@ h1, h2, h3, h4, .font-headline {
   opacity: 0;
   transform: translateY(20px);
   filter: blur(4px);
-  transition: 
+  transition:
     opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
     filter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -547,18 +648,53 @@ h1, h2, h3, h4, .font-headline {
 /* ============================================================
    STAGGER DELAYS — For grid cards
    ============================================================ */
-[data-delay="1"] { transition-delay: 0.05s; }
-[data-delay="2"] { transition-delay: 0.10s; }
-[data-delay="3"] { transition-delay: 0.15s; }
-[data-delay="4"] { transition-delay: 0.20s; }
-[data-delay="5"] { transition-delay: 0.25s; }
-[data-delay="6"] { transition-delay: 0.30s; }
-[data-delay="7"] { transition-delay: 0.35s; }
-[data-delay="8"] { transition-delay: 0.40s; }
-[data-delay="9"] { transition-delay: 0.45s; }
-[data-delay="10"] { transition-delay: 0.50s; }
-[data-delay="11"] { transition-delay: 0.55s; }
-[data-delay="12"] { transition-delay: 0.60s; }
+[data-delay="1"] {
+  transition-delay: 0.05s;
+}
+
+[data-delay="2"] {
+  transition-delay: 0.10s;
+}
+
+[data-delay="3"] {
+  transition-delay: 0.15s;
+}
+
+[data-delay="4"] {
+  transition-delay: 0.20s;
+}
+
+[data-delay="5"] {
+  transition-delay: 0.25s;
+}
+
+[data-delay="6"] {
+  transition-delay: 0.30s;
+}
+
+[data-delay="7"] {
+  transition-delay: 0.35s;
+}
+
+[data-delay="8"] {
+  transition-delay: 0.40s;
+}
+
+[data-delay="9"] {
+  transition-delay: 0.45s;
+}
+
+[data-delay="10"] {
+  transition-delay: 0.50s;
+}
+
+[data-delay="11"] {
+  transition-delay: 0.55s;
+}
+
+[data-delay="12"] {
+  transition-delay: 0.60s;
+}
 
 
 /* ============================================================
@@ -593,7 +729,7 @@ h1, h2, h3, h4, .font-headline {
 
 .feature-card:hover .card-description {
   color: rgba(26, 26, 26, 0.9);
-  text-decoration:solid;
+  text-decoration: solid;
 }
 
 
@@ -637,6 +773,7 @@ h1, h2, h3, h4, .font-headline {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.25rem;
   }
+
   .card--wide,
   .card--full {
     grid-column: span 2;
@@ -647,14 +784,17 @@ h1, h2, h3, h4, .font-headline {
   .bento-grid {
     gap: 1rem;
   }
+
   .features-hero {
     min-height: 40vh;
 
   }
+
   .sync-ring {
     width: 100px;
     height: 100px;
   }
+
   .sync-ring .material-symbols-outlined {
     font-size: 2rem;
   }
@@ -666,7 +806,7 @@ h1, h2, h3, h4, .font-headline {
     gap: 1rem;
     grid-auto-rows: auto;
   }
-  
+
   .card--wide,
   .card--tall,
   .card--full {
@@ -681,10 +821,11 @@ h1, h2, h3, h4, .font-headline {
   }
 
   /* Asymmetrical rhythm for mobile */
-  .feature-card:nth-child(1) { 
-    min-height: 450px; 
+  .feature-card:nth-child(1) {
+    min-height: 450px;
   }
-  .feature-card:nth-child(1) > .relative.z-10 {
+
+  .feature-card:nth-child(1)>.relative.z-10 {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
@@ -693,8 +834,13 @@ h1, h2, h3, h4, .font-headline {
 
 
 
-  .feature-card:nth-child(4) { min-height: 350px; }
-  .feature-card:nth-child(10) { min-height: 390px; }
+  .feature-card:nth-child(4) {
+    min-height: 350px;
+  }
+
+  .feature-card:nth-child(10) {
+    min-height: 390px;
+  }
 
 
   .card-title {
@@ -707,14 +853,15 @@ h1, h2, h3, h4, .font-headline {
 
   /* Enhanced visual for the 480px tall Trackpad card */
   .feature-card:nth-child(1) .card-visual {
-    opacity: 0.45 !important; 
+    opacity: 0.45 !important;
     width: 80%;
     height: 65%;
     right: -15%;
     bottom: -2%;
     transform: rotate(-5deg);
- 
+
   }
+
   .feature-card:nth-child(1) .card-visual img {
     object-position: bottom right;
   }
@@ -722,7 +869,7 @@ h1, h2, h3, h4, .font-headline {
 
   /* Don't hide visuals, retain the aesthetic on mobile */
   .card-visual {
-    opacity: 0.25 !important; 
+    opacity: 0.25 !important;
     width: 75%;
     height: 65%;
     right: -8%;
@@ -739,13 +886,13 @@ h1, h2, h3, h4, .font-headline {
     padding: 0.5rem 1rem;
     border-radius: 2rem;
     background: rgba(240, 251, 255, 0.9);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
   }
 
   .features-section {
     padding: 0.5rem 1.25rem 5rem;
   }
-  
+
   .media-controls {
     flex-wrap: wrap;
     justify-content: center;
@@ -756,16 +903,16 @@ h1, h2, h3, h4, .font-headline {
 /* Specific optimizations for Flips / extra narrow screens (Galaxy Z Flip wrapper etc) */
 @media (max-width: 380px) {
   .feature-card {
-    padding: 1.25rem ;
+    padding: 1.25rem;
 
     min-height: auto;
   }
-  
+
   .hero-title {
     font-size: 2.5rem;
     word-break: break-word;
   }
-  
+
   .card-title {
     font-size: 1.15rem;
   }
@@ -774,17 +921,19 @@ h1, h2, h3, h4, .font-headline {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .back-nav span:not(.material-symbols-outlined) {
-    display: none; /* Hide 'Back to Home' text, show only icon on flips */
+    display: none;
+    /* Hide 'Back to Home' text, show only icon on flips */
   }
-  
+
   .back-nav {
     padding: 0.6rem;
   }
-  
+
   .card-visual {
-    display: block; /* Show as subtle peek instead of hiding entirely */
+    display: block;
+    /* Show as subtle peek instead of hiding entirely */
     width: 80%;
     height: 60%;
     bottom: -10%;

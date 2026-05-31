@@ -105,59 +105,83 @@ function initBgShader() {
       
       float t = u_time;
 
+      float strength = 0.0;
+      float tDist = 0.0;
+
       #ifndef IS_MOBILE
         // ── Desktop-only: Touch/Click ripple warp ──────────────
         vec2 touch = u_touch.xy / u_resolution;
         touch.x *= aspect;
         touch.y = 1.0 - touch.y;
-        float strength = u_touch.z;
-        float tDist = distance(st, touch);
+        strength = u_touch.z;
+        tDist = distance(st, touch);
         float ripple = sin(tDist * 30.0 - t * 6.0)
                      * exp(-tDist * 5.0)
                      * strength;
         vec2 dir = (tDist > 0.001) ? normalize(st - touch) : vec2(0.0);
-        st += dir * ripple * 0.08;
+        st += dir * ripple * 0.05;
       #endif
 
       // ── Spacious fluid scale ─────────────────────────────
-      // Lower = more zoomed out = more spacious/airy
-      vec2 base = st * 0.45; // slightly wider
+      // Lower = more zoomed out = more spacious/airy (0.35 = giant luxury clouds)
+      vec2 base = st * 0.35;
       
       // ── Slow breathing pulse ─────────────────────────────
-      float breath = sin(t * 0.25) * 0.15 + 1.0;
+      float breath = sin(t * 0.18) * 0.12 + 1.0;
 
-      // ── Single-layer domain warping (clean, not cluttered) ──
+      // ── Rotating flow field (premium) centered on screen ──
+      float a = t * 0.05;
+      mat2 rot = mat2(
+        cos(a), -sin(a),
+        sin(a),  cos(a)
+      );
+      vec2 center = vec2(aspect * 0.5, 0.5) * 0.35;
+      vec2 rot_base = rot * (base - center) + center;
+
       vec2 q = vec2(
-        fbm(base + vec2(t * 0.02, t * 0.01)),
-        fbm(base + vec2(-t * 0.015, t * 0.025))
+        fbm(rot_base + vec2(t * 0.02, 0.0)),
+        fbm(rot_base + vec2(0.0, t * 0.02))
       );
 
-      // Gentle warp
-      float flow = fbm(base + 1.8 * q);
+      // Two fluid layers with animated domain warp & parallax depth
+      float flow1 = fbm(rot_base + 2.5 * q + t * 0.015);
+      float flow2 = fbm(rot_base * 1.8 + 2.5 * q + 5.0 - t * 0.01);
+      float flow = mix(flow1, flow2, 0.45);
 
-      // ── Colour palette (Matched to Website #6dcdf9) ──────
-      vec3 col1 = vec3(0.980, 0.976, 0.965);   // off-white / transparent base
-      vec3 col2 = vec3(0.427, 0.804, 0.976);   // #6dcdf9 (Primary brand blue)
-      vec3 col3 = vec3(0.900, 0.960, 0.990);   // Very soft icy highlight
-      vec3 col4 = vec3(0.300, 0.650, 0.850);   // Deeper subtle accent
+      // ── Colour palette (Matched to Website #c6edff) ──────
+      vec3 col1 = vec3(1.000, 1.000, 1.000);   // Pure white (#ffffff)
+      vec3 col2 = vec3(0.776, 0.929, 1.000);   // #c6edff (Primary brand blue)
+      vec3 col3 = vec3(0.557, 0.847, 1.000);   // #8ed8ff (Premium luxury sky blue)
 
       // Calculate how "fluid" this pixel is
       float f = flow * breath;
-      float fluidIntensity = smoothstep(-0.2, 0.8, f);
+      float fluidIntensity = smoothstep(-0.35, 0.65, f);
       
-      // We start with the soft icy sky as the base fluid color
-      vec3 color = col3;
+      // We start with the off-white base color
+      vec3 color = col1;
       
       // Gently mix in the brand blue
-      color = mix(color, col2, smoothstep(0.2, 1.1, q.x + q.y) * 0.8);
+      color = mix(color, col2, smoothstep(0.0, 0.8, q.x + q.y) * 0.8);
       // Touch of deep accent in the dense areas
-      color = mix(color, col4, smoothstep(0.6, 1.4, q.x * q.y + 0.5) * 0.3);
+      color = mix(color, col3, smoothstep(0.4, 1.2, q.x * q.y + 0.3) * 0.45);
+
+      // ── Premium Apple/Vercel Caustic highlights ───────────
+      float shine = pow(max(flow, 0.0), 4.0);
+      color += col2 * shine * 0.15;
+
+      // ── Premium Edge lighting ───────────────────────────────
+      float rim = smoothstep(0.3, 1.0, flow);
+      color += rim * vec3(1.0) * 0.08;
+
+      // ── Color Breathing ─────────────────────────────────────
+      float pulse = sin(t * 0.15) * 0.5 + 0.5;
+      color = mix(color, col2, pulse * 0.08);
+
+      // ── White Glow Center ───────────────────────────────────
+      float glow = exp(-distance(st, vec2(aspect * 0.5, 0.5)) * 2.0);
+      color += glow * vec3(1.0) * 0.12;
 
       #ifndef IS_MOBILE
-        // Subtle film grain (desktop only)
-        float grain = fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453) * 0.025;
-        color -= grain;
-
         // Mouse hover — soft gradient pull
         vec2 mouse = u_mouse / u_resolution;
         mouse.x *= aspect;
@@ -169,7 +193,7 @@ function initBgShader() {
         // Ripple colour bloom
         float bloom = exp(-tDist * 8.0) * strength;
         color = mix(color, vec3(1.0), bloom * 0.4);
-        color = mix(color, col4, bloom * 0.6);
+        color = mix(color, col3, bloom * 0.6);
       #endif
 
       // ── Vertical alpha fade ────────────────────────────────
@@ -179,11 +203,12 @@ function initBgShader() {
       // Fade out near the bottom
       float fade = smoothstep(0.0, 0.6, v_uv.y + 0.1);
 
-      #ifdef IS_MOBILE
-        gl_FragColor = vec4(color, alpha * fade * 0.5); // Subtle visibility on mobile
-      #else
-        gl_FragColor = vec4(color, alpha * fade * 0.45); // Subtle visibility on desktop
-      #endif
+      // ── Radial distance fade (keeps shader concentrated around center of features) ──
+      float distToCenter = distance(st, vec2(aspect * 0.5, 0.5));
+      float radialFade = smoothstep(0.75, 0.25, distToCenter);
+      alpha *= radialFade;
+
+      gl_FragColor = vec4(color, alpha * fade * 0.40);
     }
   `;
 
@@ -315,53 +340,50 @@ function initBgShader() {
     animationFrameId = requestAnimationFrame(render);
   }
 
-  // ── Smart Loading (Intersection Observer) ────────────────────
+  // ── Smart Scroll-Linked Fade-In & Load ───────────────────────
+  const hero = document.querySelector(".features-hero");
   const featuresSection = document.querySelector(".features-section");
 
-  if (featuresSection) {
-    if (isMobile) {
-      canvas.style.opacity = "0"; // Hide instantly in the hero section
-      canvas.style.transition = "opacity 1.2s ease-in-out";
-    } else {
-      // Desktop: Start invisible and fade in smoothly
-      canvas.style.opacity = "0";
-      canvas.style.transition = "opacity 2s ease-in-out";
-      requestAnimationFrame(() => { canvas.style.opacity = "1"; });
+  if (hero && featuresSection) {
+    canvas.style.opacity = "0";
+    canvas.style.transition = "none"; // Direct control via scroll for real-time responsiveness
+
+    function handleScroll() {
+      const scrollY = window.scrollY;
+      const heroHeight = hero.offsetHeight || 300;
+      
+      // Delay fade-in: keep shader 100% hidden in welcome hero, start fading in past 35% scroll
+      const startFade = heroHeight * 0.35;
+      const endFade = heroHeight * 0.90;
+      
+      let progress = 0.0;
+      if (scrollY > startFade) {
+        progress = Math.min((scrollY - startFade) / (endFade - startFade), 1.0);
+      }
+      canvas.style.opacity = progress.toFixed(3);
+
+      // Only run WebGL loop when canvas is visible (> 1% opacity) to save battery
+      isVisible = progress > 0.01;
+
+      if (isVisible) {
+        if (!animationFrameId) {
+          lastFrame = performance.now();
+          animationFrameId = requestAnimationFrame(render);
+        }
+      } else {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+      }
     }
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        isVisible = entry.isIntersecting;
-        
-        // On mobile, completely hide the canvas when in the top hero section
-        if (isMobile) {
-          canvas.style.opacity = isVisible ? "1" : "0";
-        }
-
-        if (isVisible) {
-          if (!animationFrameId) {
-            lastFrame = performance.now();
-            animationFrameId = requestAnimationFrame(render);
-          }
-        } else {
-          // Cancel render loop to save battery when not visible
-          if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
-            animationFrameId = null;
-          }
-        }
-      });
-    }, { threshold: 0.01 });
-
-    observer.observe(featuresSection);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Trigger initial calculation on page load
   } else {
-    // Fallback if loaded directly without the dynamic wrapper
+    // Fallback if elements do not exist
     isVisible = true;
-    if (isMobile) {
-      canvas.style.opacity = "0";
-      canvas.style.transition = "opacity 1.2s ease-in-out";
-      requestAnimationFrame(() => { canvas.style.opacity = "1"; });
-    }
+    canvas.style.opacity = "1";
     animationFrameId = requestAnimationFrame(render);
   }
 }
