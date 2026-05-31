@@ -20,6 +20,21 @@ function initBgShader() {
 
   const isMobile = window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent);
 
+  // ── Low-power device detection ─────────────────────────────
+  // Check 1: deviceMemory API (Chrome/Android, < 4 GB RAM = low-tier)
+  const lowMemory = (navigator.deviceMemory !== undefined) && navigator.deviceMemory < 4;
+  // Check 2: GPU renderer string via WEBGL_debug_renderer_info
+  let lowGPU = false;
+  try {
+    const dbgExt = gl.getExtension("WEBGL_debug_renderer_info");
+    if (dbgExt) {
+      const renderer = gl.getParameter(dbgExt.UNMASKED_RENDERER_WEBGL) || "";
+      // Match budget/integrated GPUs known to struggle with noise shaders
+      lowGPU = /SwiftShader|Mali-[34]|Mali-G[0-5]|Adreno [234]|PowerVR|GE8|Vivante|VideoCore/i.test(renderer);
+    }
+  } catch (e) { /* extension unavailable, safe to ignore */ }
+  const isLowPower = lowMemory || lowGPU;
+
   // ── Vertex Shader ──────────────────────────────────────────
   const vsSource = `
     attribute vec2 a_position;
@@ -34,7 +49,7 @@ function initBgShader() {
   // ── Fragment Shader ────────────────────────────────────────
   const fsSource = `
     precision mediump float;
-    ${isMobile ? '#define IS_MOBILE' : ''}
+    ${isLowPower ? '#define IS_LOW_POWER' : isMobile ? '#define IS_MOBILE' : ''}
     varying vec2 v_uv;
 
     uniform vec2  u_resolution;
@@ -82,13 +97,18 @@ function initBgShader() {
       float value = 0.0;
       float amp   = 0.5;
       float freq  = 1.0;
-      #ifdef IS_MOBILE
+      #ifdef IS_LOW_POWER
+        // Tier 3 — 1 octave only, absolute minimum cost
+        value += amp * snoise(p * freq);
+      #elif defined(IS_MOBILE)
+        // Tier 2 — 2 octaves
         for (int i = 0; i < 2; i++) {
           value += amp * snoise(p * freq);
           freq  *= 2.0;
           amp   *= 0.5;
         }
       #else
+        // Tier 1 — 3 octaves (desktop)
         for (int i = 0; i < 3; i++) {
           value += amp * snoise(p * freq);
           freq  *= 2.0;
@@ -123,97 +143,99 @@ function initBgShader() {
       #endif
 
       // ── Spacious fluid scale ─────────────────────────────
-      // Lower = more zoomed out = more spacious/airy (0.35 = giant luxury clouds)
       vec2 base = st * 0.35;
       
       // ── Slow breathing pulse ─────────────────────────────
       float breath = sin(t * 0.18) * 0.12 + 1.0;
 
-      // ── Rotating flow field (premium) centered on screen ──
-      float a = t * 0.05;
-      mat2 rot = mat2(
-        cos(a), -sin(a),
-        sin(a),  cos(a)
-      );
-      vec2 center = vec2(aspect * 0.5, 0.5) * 0.35;
-      vec2 rot_base = rot * (base - center) + center;
-
-      // ── OPTIMIZATION 1: Use single noise for domain warp ──
-      // Saves 4-8 noise calculations per pixel vs FBM
-      vec2 q = vec2(
-        fbm(rot_base + vec2(t * 0.02, 0.0)),
-        fbm(rot_base + vec2(0.0, t * 0.02))
-      );
-
-      // ── OPTIMIZATION 2: Single fluid layer ──
-      // Saves 2-3 noise calculations per pixel. 
-      // The domain warp (q) provides enough complexity.
-      float flow = fbm(rot_base + 2.5 * q + t * 0.015);
+      // ── Flow base ────────────────────────────────────────
+      // Desktop: full rotating flow field (cos/sin per pixel)
+      // Mobile/Low-power: skip rotation — saves cos+sin+mat2 per pixel
+      vec2 rot_base;
+      #if !defined(IS_MOBILE) && !defined(IS_LOW_POWER)
+        float a = t * 0.05;
+        mat2 rot = mat2(cos(a), -sin(a), sin(a), cos(a));
+        vec2 center = vec2(aspect * 0.5, 0.5) * 0.35;
+        rot_base = rot * (base - center) + center;
+      #else
+        // Simple slow drift instead — same visual feel, zero trig cost
+        rot_base = base + vec2(t * 0.012, t * 0.008);
+      #endif
 
       // ── Colour palette (Matched to Website #c6edff) ──────
       vec3 col1 = vec3(1.000, 1.000, 1.000);   // Pure white (#ffffff)
-      vec3 col2 = vec3(0.776, 0.929, 1.000);   // #c6edff (Primary brand blue)
-      vec3 col3 = vec3(0.557, 0.847, 1.000);   // #8ed8ff (Premium luxury sky blue)
+      vec3 col2 = vec3(0.756, 0.929, 1.000);   // #c6edff (Primary brand blue)
+      vec3 col3 = vec3(0.957, 0.947, 1.000);   // #8ed8ff (Premium luxury sky blue)
 
-      // Calculate how "fluid" this pixel is
-      float f = flow * breath;
-      float fluidIntensity = smoothstep(-0.35, 0.65, f);
-      
-      // We start with the off-white base color
-      vec3 color = col1;
-      
-      // Gently mix in the brand blue
-      color = mix(color, col2, smoothstep(0.0, 0.8, q.x + q.y) * 0.8);
-      // Touch of deep accent in the dense areas
-      color = mix(color, col3, smoothstep(0.4, 1.2, q.x * q.y + 0.3) * 0.45);
+      float flow;
+      float fluidIntensity;
+      vec3 color;
 
-      // ── Premium Apple/Vercel Caustic highlights ───────────
-      float shine = pow(max(flow, 0.0), 4.0);
-      color += col2 * shine * 0.15;
+      #ifdef IS_LOW_POWER
+        // ── Tier 3: No domain warp, single noise lookup ───────
+        // ~3× cheaper than Tier 2. No q vector needed at all.
+        flow = fbm(rot_base + t * 0.015);
+        fluidIntensity = smoothstep(-0.35, 0.65, flow * breath);
+        color = mix(col1, col2, smoothstep(0.0, 1.0, flow + 0.3) * 0.75);
+      #else
+        // ── Tier 1 & 2: Domain warp for organic fluid look ───
+        vec2 q = vec2(
+          fbm(rot_base + vec2(t * 0.02, 0.0)),
+          fbm(rot_base + vec2(0.0, t * 0.02))
+        );
+        flow = fbm(rot_base + 2.5 * q + t * 0.015);
+        fluidIntensity = smoothstep(-0.35, 0.65, flow * breath);
+        // We start with the off-white base color
+        color = col1;
+        // Gently mix in the brand blue
+        color = mix(color, col2, smoothstep(0.0, 0.8, q.x + q.y) * 0.8);
+        // Touch of deep accent in the dense areas
+        color = mix(color, col3, smoothstep(0.4, 1.2, q.x * q.y + 0.3) * 0.45);
+      #endif
 
-      // ── Premium Edge lighting ───────────────────────────────
-      float rim = smoothstep(0.3, 1.0, flow);
-      color += rim * vec3(1.0) * 0.08;
-
-      // ── Color Breathing ─────────────────────────────────────
-      float pulse = sin(t * 0.15) * 0.5 + 0.5;
-      color = mix(color, col2, pulse * 0.08);
-
-      // ── White Glow Center ───────────────────────────────────
-      // OPTIMIZATION 3: Calculate screen center distance once
-      vec2 screenCenter = vec2(aspect * 0.5, 0.5);
-      float distToCenter = distance(st, screenCenter);
-      
-      float glow = exp(-distToCenter * 2.0);
-      color += glow * vec3(1.0) * 0.12;
-
-      #ifndef IS_MOBILE
-        // Mouse hover — soft gradient pull
+      // ── Desktop-only premium post-processing ─────────────
+      #if !defined(IS_MOBILE) && !defined(IS_LOW_POWER)
+        // Caustic highlights
+        float shine = pow(max(flow, 0.0), 4.0);
+        color += col2 * shine * 0.15;
+        // Edge lighting
+        float rim = smoothstep(0.3, 1.0, flow);
+        color += rim * vec3(1.0) * 0.08;
+        // Color breathing
+        float pulse = sin(t * 0.15) * 0.5 + 0.5;
+        color = mix(color, col2, pulse * 0.08);
+        // White glow center
+        vec2 screenCenter = vec2(aspect * 0.5, 0.5);
+        float distToCenter = distance(st, screenCenter);
+        float glow = exp(-distToCenter * 2.0);
+        color += glow * vec3(1.0) * 0.12;
+        // Mouse hover
         vec2 mouse = u_mouse / u_resolution;
         mouse.x *= aspect;
         mouse.y = 1.0 - mouse.y;
         float mDist = distance(st, mouse);
         float hover = smoothstep(0.6, 0.0, mDist) * 0.2;
         color = mix(color, col2, hover);
-
-        // Ripple colour bloom
+        // Ripple bloom
         float bloom = exp(-tDist * 8.0) * strength;
         color = mix(color, vec3(1.0), bloom * 0.4);
         color = mix(color, col3, bloom * 0.6);
+        // Alpha with radial fade
+        float radialFade = smoothstep(0.75, 0.25, distToCenter);
+        float alpha = fluidIntensity * radialFade;
+        float fade = smoothstep(0.0, 0.6, v_uv.y + 0.1);
+        gl_FragColor = vec4(color, alpha * fade * 0.40);
+
+      #else
+        // ── Mobile / Low-power: minimal post-processing ────
+        // Single center glow using screen UV (no expensive distance())
+        vec2 uv = v_uv;
+        float centerGlow = 1.0 - smoothstep(0.0, 0.7, length(uv - 0.5) * 2.0);
+        color += centerGlow * 0.08;
+        // Simple bottom fade
+        float fade = smoothstep(0.0, 0.5, v_uv.y);
+        gl_FragColor = vec4(color, fluidIntensity * fade * 0.35);
       #endif
-
-      // ── Vertical alpha fade ────────────────────────────────
-      // Base transparency is the fluid intensity (so background shows through)
-      float alpha = fluidIntensity;
-      
-      // Fade out near the bottom
-      float fade = smoothstep(0.0, 0.6, v_uv.y + 0.1);
-
-      // ── Radial distance fade (keeps shader concentrated around center of features) ──
-      float radialFade = smoothstep(0.75, 0.25, distToCenter);
-      alpha *= radialFade;
-
-      gl_FragColor = vec4(color, alpha * fade * 0.40);
     }
   `;
 
@@ -272,8 +294,8 @@ function initBgShader() {
   let touchPoint = { x: cx, y: cy };
   let touchStrength = 0;
 
-  if (!isMobile) {
-    // Desktop only — mouse hover + click ripple
+  if (!isMobile && !isLowPower) {
+    // Desktop only — mouse hover + click ripple (skip on low-power too)
     window.addEventListener("mousemove", (e) => {
       targetMouse.x = e.clientX;
       targetMouse.y = e.clientY;
@@ -292,7 +314,8 @@ function initBgShader() {
   function resize() {
     // ── OPTIMIZATION 4: Lower render resolution ──
     // Fluid gradients look perfectly fine slightly upscaled. Huge performance boost.
-    const dpr = isMobile ? 0.5 : Math.min(window.devicePixelRatio || 1, 1.0);
+    // Tier 3 (low-power): 0.35 DPR — fluid gradients are very forgiving at low res
+    const dpr = isLowPower ? 0.35 : isMobile ? 0.5 : Math.min(window.devicePixelRatio || 1, 1.0);
     
     // Prevent horizontal scrolling by not forcing width > viewport (e.g. scrollbar width)
     canvas.style.width = "100%";
@@ -328,11 +351,12 @@ function initBgShader() {
   function render(now) {
     if (!isVisible) return;
 
-    const frameBudget = isMobile ? 33 : 16;
+    // Low-power = 20fps, mobile = 30fps, desktop = 60fps
+    const frameBudget = isLowPower ? 50 : isMobile ? 33 : 16;
     if (now - lastFrame >= frameBudget) {
       lastFrame = now;
 
-      if (!isMobile) {
+      if (!isMobile && !isLowPower) {
         mouse.x += (targetMouse.x - mouse.x) * 0.04;
         mouse.y += (targetMouse.y - mouse.y) * 0.04;
         touchStrength *= 0.97;
