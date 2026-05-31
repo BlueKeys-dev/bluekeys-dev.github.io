@@ -52,6 +52,10 @@ function initBgShader() {
     ${isLowPower ? '#define IS_LOW_POWER' : isMobile ? '#define IS_MOBILE' : ''}
     varying vec2 v_uv;
 
+    // [E] Time is clamped to prevent float precision drift on long sessions
+    // After ~3600s floats lose sub-pixel precision and noise starts glitching
+    #define SAFE_TIME(t) mod(t, 3600.0)
+
     uniform vec2  u_resolution;
     uniform float u_time;
     uniform vec2  u_mouse;
@@ -122,8 +126,9 @@ function initBgShader() {
       float aspect = u_resolution.x / u_resolution.y;
       vec2 st = gl_FragCoord.xy / u_resolution.xy;
       st.x *= aspect;
-      
-      float t = u_time;
+
+      // [E] Use clamped time — safe after hours of running
+      float t = SAFE_TIME(u_time);
 
       float strength = 0.0;
       float tDist = 0.0;
@@ -145,45 +150,51 @@ function initBgShader() {
       // ── Spacious fluid scale ─────────────────────────────
       vec2 base = st * 0.35;
       
-      // ── Slow breathing pulse ─────────────────────────────
-      float breath = sin(t * 0.18) * 0.12 + 1.0;
+      // ── Slow breathing pulse (slowed for scroll smoothness) ──
+      float breath = sin(t * 0.10) * 0.10 + 1.0;  // was 0.18 → calmer, less GPU churn
 
       // ── Flow base ────────────────────────────────────────
       // Desktop: full rotating flow field (cos/sin per pixel)
       // Mobile/Low-power: skip rotation — saves cos+sin+mat2 per pixel
       vec2 rot_base;
       #if !defined(IS_MOBILE) && !defined(IS_LOW_POWER)
-        float a = t * 0.05;
+        float a = t * 0.03;  // was 0.05 — slower rotation = smoother feel
         mat2 rot = mat2(cos(a), -sin(a), sin(a), cos(a));
         vec2 center = vec2(aspect * 0.5, 0.5) * 0.35;
         rot_base = rot * (base - center) + center;
       #else
-        // Simple slow drift instead — same visual feel, zero trig cost
-        rot_base = base + vec2(t * 0.012, t * 0.008);
+        // Gentle drift — even slower on mobile for scroll budget
+        rot_base = base + vec2(t * 0.007, t * 0.005);  // was 0.012/0.008
       #endif
 
       // ── Colour palette (Matched to Website #c6edff) ──────
-      vec3 col1 = vec3(1.000, 1.000, 1.000);   // Pure white (#ffffff)
-      vec3 col2 = vec3(0.756, 0.929, 1.000);   // #c6edff (Primary brand blue)
-      vec3 col3 = vec3(0.957, 0.947, 1.000);   // #8ed8ff (Premium luxury sky blue)
+      // [D] lowp for color vec3s on mobile/low-power — GPU uses 8-bit internally anyway
+      #if defined(IS_MOBILE) || defined(IS_LOW_POWER)
+        lowp vec3 col1 = vec3(1.000, 1.000, 1.000);
+        lowp vec3 col2 = vec3(0.776, 0.929, 1.000);
+        lowp vec3 col3 = vec3(0.557, 0.847, 1.000);
+      #else
+        vec3 col1 = vec3(1.000, 1.000, 1.000);   // Pure white (#ffffff)
+        vec3 col2 = vec3(0.776, 0.929, 1.000);   // #c6edff (Primary brand blue)
+        vec3 col3 = vec3(0.557, 0.847, 1.000);   // #8ed8ff (Premium luxury sky blue)
+      #endif
 
       float flow;
       float fluidIntensity;
       vec3 color;
 
       #ifdef IS_LOW_POWER
-        // ── Tier 3: No domain warp, single noise lookup ───────
-        // ~3× cheaper than Tier 2. No q vector needed at all.
-        flow = fbm(rot_base + t * 0.015);
+        // Tier 3: single noise, ultra-slow drift
+        flow = fbm(rot_base + t * 0.008);  // was 0.015
         fluidIntensity = smoothstep(-0.35, 0.65, flow * breath);
         color = mix(col1, col2, smoothstep(0.0, 1.0, flow + 0.3) * 0.75);
       #else
-        // ── Tier 1 & 2: Domain warp for organic fluid look ───
+        // Tier 1 & 2: Domain warp — slowed for scroll smoothness
         vec2 q = vec2(
-          fbm(rot_base + vec2(t * 0.02, 0.0)),
-          fbm(rot_base + vec2(0.0, t * 0.02))
+          fbm(rot_base + vec2(t * 0.012, 0.0)),  // was 0.02
+          fbm(rot_base + vec2(0.0, t * 0.012))   // was 0.02
         );
-        flow = fbm(rot_base + 2.5 * q + t * 0.015);
+        flow = fbm(rot_base + 2.5 * q + t * 0.008);  // was 0.015
         fluidIntensity = smoothstep(-0.35, 0.65, flow * breath);
         // We start with the off-white base color
         color = col1;
@@ -201,8 +212,8 @@ function initBgShader() {
         // Edge lighting
         float rim = smoothstep(0.3, 1.0, flow);
         color += rim * vec3(1.0) * 0.08;
-        // Color breathing
-        float pulse = sin(t * 0.15) * 0.5 + 0.5;
+        // Color breathing — slowed
+        float pulse = sin(t * 0.08) * 0.5 + 0.5;  // was 0.15
         color = mix(color, col2, pulse * 0.08);
         // White glow center
         vec2 screenCenter = vec2(aspect * 0.5, 0.5);
@@ -270,7 +281,7 @@ function initBgShader() {
   const buf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-    -1, -1,  1, -1,  -1, 1,  1, 1,
+    -1, -1, 1, -1, -1, 1, 1, 1,
   ]), gl.STATIC_DRAW);
 
   const aPos = gl.getAttribLocation(program, "a_position");
@@ -316,11 +327,15 @@ function initBgShader() {
     // Fluid gradients look perfectly fine slightly upscaled. Huge performance boost.
     // Tier 3 (low-power): 0.35 DPR — fluid gradients are very forgiving at low res
     const dpr = isLowPower ? 0.35 : isMobile ? 0.5 : Math.min(window.devicePixelRatio || 1, 1.0);
-    
+
     // Prevent horizontal scrolling by not forcing width > viewport (e.g. scrollbar width)
     canvas.style.width = "100%";
     canvas.style.height = "100%";
-    
+    // [A] Layer hints — tells browser to promote canvas to its own GPU layer
+    // This prevents shader repaints from invalidating scroll compositing layer
+    canvas.style.willChange = "opacity";
+    canvas.style.contain = "strict";
+
     const w = document.documentElement.clientWidth;
     const h = window.innerHeight;
 
@@ -343,18 +358,52 @@ function initBgShader() {
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
   // ── Render loop ────────────────────────────────────────────
-  const t0 = performance.now();
-  let lastFrame = 0;
+  let lastFrame = performance.now();
+  let shaderTime = 0;
+  let timeScale = 1.0;
   let isVisible = false;
   let animationFrameId = null;
 
+  // [B] Scroll-pause: stop rendering while user is actively scrolling
+  // Scroll events fire at ~60Hz — if shader is also running, GPU gets double-booked
+  let isScrolling = false;
+  let scrollPauseTimer = null;
+  window.addEventListener("scroll", () => {
+    isScrolling = true;
+    clearTimeout(scrollPauseTimer);
+    scrollPauseTimer = setTimeout(() => {
+      isScrolling = false;
+      // Resume the render loop if it should be visible
+      if (isVisible && !animationFrameId) {
+        lastFrame = performance.now();
+        timeScale = 0.0; // Start frozen, gently accelerate
+        animationFrameId = requestAnimationFrame(render);
+      }
+    }, 200);
+  }, { passive: true });
+
   function render(now) {
-    if (!isVisible) return;
+    if (!isVisible || isScrolling) {
+      // [B] Pause render during scroll — GPU freed for compositor
+      animationFrameId = null;
+      return;
+    }
+
+    // Smoothly ease the time scale back to 1.0 after a pause
+    timeScale += (1.0 - timeScale) * 0.05;
+
+    let dt = now - lastFrame;
+    // Cap dt to prevent massive jumps if tab is inactive
+    if (dt > 100) dt = 16;
 
     // Low-power = 20fps, mobile = 30fps, desktop = 60fps
     const frameBudget = isLowPower ? 50 : isMobile ? 33 : 16;
-    if (now - lastFrame >= frameBudget) {
+    if (dt >= frameBudget) {
       lastFrame = now;
+
+      // Accumulate time manually instead of using absolute (now - t0)
+      // This prevents the visual "jump" when resuming from a pause
+      shaderTime += (dt * 0.001) * timeScale;
 
       if (!isMobile && !isLowPower) {
         mouse.x += (targetMouse.x - mouse.x) * 0.04;
@@ -363,9 +412,13 @@ function initBgShader() {
         if (touchStrength < 0.005) touchStrength = 0;
       }
 
-      gl.uniform1f(loc.time, (now - t0) * 0.001);
-      gl.uniform2f(loc.mouse, mouse.x, mouse.y);
-      gl.uniform3f(loc.touch, touchPoint.x, touchPoint.y, touchStrength);
+      gl.uniform1f(loc.time, shaderTime);
+      // [H] Skip mouse/touch uniform uploads on mobile & low-power
+      // These are unused in the shader on those tiers — wasted CPU→GPU calls
+      if (!isMobile && !isLowPower) {
+        gl.uniform2f(loc.mouse, mouse.x, mouse.y);
+        gl.uniform3f(loc.touch, touchPoint.x, touchPoint.y, touchStrength);
+      }
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
@@ -384,11 +437,11 @@ function initBgShader() {
     function handleScroll() {
       const scrollY = window.scrollY;
       const heroHeight = hero.offsetHeight || 300;
-      
+
       // Delay fade-in: keep shader 100% hidden in welcome hero, start fading in past 35% scroll
       const startFade = heroHeight * 0.35;
       const endFade = heroHeight * 0.90;
-      
+
       let progress = 0.0;
       if (scrollY > startFade) {
         progress = Math.min((scrollY - startFade) / (endFade - startFade), 1.0);

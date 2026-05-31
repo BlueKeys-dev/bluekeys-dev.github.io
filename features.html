@@ -7,18 +7,22 @@
     <title>Features | BlueKeys</title>
     <link rel="icon" type="image/x-icon" href="assets/logo/logo%20.ico" />
 
+    <!-- [D] Preconnect: resolves DNS + TLS for Google Fonts early -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <!-- Tailwind CSS (for layout utilities and forms) -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
-    <!-- Tailwind Config (harmonized with welcome page) -->
+    <!-- [A] Bug fix: primary was #6dcdf9 (bright blue) — should match index.html (#000000) -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: "#6dcdf9",
-                        secondary: "#6dcdf9",
-                        accent: "#6dcdf9",
+                        primary: "#000000",
+                        secondary: "#8ecae6",
+                        accent: "#8ecae6",
                         surface: "#FAF9F6",
                         "on-surface": "#1a1a1a",
                         "surface-container-low": "hsla(197, 60%, 93%, 0.4)",
@@ -27,7 +31,7 @@
                         DEFAULT: "0.125rem",
                         lg: "0.25rem",
                         xl: "0.5rem",
-                        full: "0.75rem",
+                        full: "9999px",
                     },
                     fontFamily: {
                         headline: ["Manrope", "sans-serif"],
@@ -64,18 +68,21 @@
     <div class="ambient-orb ambient-orb--center"></div>
     <div class="ambient-orb ambient-orb--bottom"></div>
 
-    <!-- Minimal Back Navigation -->
-    <a href="index.html" class="back-nav">
-        <span class="material-symbols-outlined">arrow_back</span>
+    <!-- [A] Bug fix: added aria-label for screen readers -->
+    <a href="index.html" class="back-nav" aria-label="Back to BlueKeys home">
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+        <span class="back-nav__label">BlueKeys</span>
     </a>
 
     <!-- Hero Section with Tesla-Style Scroll Text Reveal -->
     <header class="features-hero">
         <span class="hero-eyebrow" data-reveal="fade-up">Explore the Ecosystem</span>
         <p class="hero-subtitle" data-reveal="fade-in">
-           <b>Control computers from smartphone</b> 
+           <!-- [A] Bug fix: was "Control computers from smartphone" -->
+           <b>Control your computer from your smartphone.</b>
         </p>
-        <p class="hero-subtitle" data-reveal="fade-in" >simeless, precise, and reliably</p>
+        <!-- [A] Bug fix: was "simeless, precise, and reliably" -->
+        <p class="hero-subtitle" data-reveal="fade-in">Seamless, precise, and reliable.</p>
     </header>
 
     <!-- Core Feature Section: Advanced Bento Grid -->
@@ -126,6 +133,7 @@
                     <h3 class="card-title">Keyboard Modes</h3>
                     <p class="card-description">
                        Type comfortably with layouts that adapt instantly to any orientation—portrait or landscape—without interrupting your workflow.
+                    </p>
                 </div>
                 <div class="card-visual" style="bottom: -5%; rotate: -8deg; opacity: 0.25;">
                     <img src="light/landscape keybaord.png" alt="Landscape Keyboard Interface" loading="lazy" decoding="async">
@@ -196,24 +204,15 @@
 
             </div>
 
-<!-- 9. Clipboard Sync -->
-<div class="feature-card" data-reveal="fade-up" data-delay="9">
-    <div class="relative z-10 flex flex-col items-start gap-4 ">
-
-        <span class="material-symbols-outlined card-icon icon-clipboard-tap text-5xl">
-            content_copy
-        </span>
-
-        <h3 class="card-title m-0">
-            Clipboard Sync
-        </h3>
-
-        <p class="card-description m-0">
-            Copy text on phone and paste it on PC across the workspace.
-        </p>
-
-    </div>
-</div>
+            <!-- 9. Clipboard Sync -->
+            <!-- [A] Bug fix: was outside the bento-grid div, bad indentation -->
+            <div class="feature-card" data-reveal="fade-up" data-delay="9">
+                <div class="relative z-10 flex flex-col items-start gap-4">
+                    <span class="material-symbols-outlined card-icon icon-clipboard-tap">content_copy</span>
+                    <h3 class="card-title">Clipboard Sync</h3>
+                    <p class="card-description">Copy text on phone and paste it on PC across the workspace.</p>
+                </div>
+            </div>
             <!-- 10. Seamless Connection -->
             <div class="feature-card" data-reveal="fade-up" data-delay="10">
                 <span
@@ -228,5 +227,21 @@
 
         </div>
     </main>
+
+    <!-- [B] Download CTA Section -->
+    <section class="features-cta" aria-label="Download BlueKeys">
+        <p class="features-cta__label">Available on Android</p>
+        <h2 class="features-cta__title">Ready to connect?</h2>
+        <p class="features-cta__sub">Turn your phone into a Bluetooth keyboard, mouse, and remote — for free.</p>
+        <a
+            href="https://play.google.com/store/apps/details?id=com.blukeys.hidremote"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="features-cta__btn"
+            aria-label="Download BlueKeys on Google Play">
+            <img src="icon/playstore.svg" width="22" height="22" alt="" aria-hidden="true" />
+            Download on Google Play
+        </a>
+    </section>
 </body>
 </html>

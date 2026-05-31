@@ -5,6 +5,38 @@
         max-width: 100vw;
       }
 
+      /* ─── [I] Typography (moved from inline <style> in index.html) ──────── */
+      .gallery-title-prefix::before {
+        content: "—";
+        margin-right: 0.5rem;
+        font-weight: 300;
+      }
+
+      .caption-text {
+        font-size: 8px;
+        letter-spacing: 0.15em;
+        font-weight: 500;
+        font-family: 'Inter', sans-serif;
+        color: #64748b;
+        text-transform: uppercase;
+        line-height: 1;
+      }
+
+      /* ─── [D] content-visibility: skip rendering hidden gallery rows ─────── */
+      /* The gallery section is always below the fold on first load.
+         This tells the browser to skip layout + paint until scrolled into view.
+         contain-intrinsic-size gives a size hint so the scrollbar stays correct. */
+      [data-purpose="image-grid"] {
+        content-visibility: auto;
+        contain-intrinsic-size: 0 2000px; /* estimated gallery height */
+      }
+
+      /* ─── [D] Also skip the feedback section until scrolled to ──────────── */
+      #feedback-section-container {
+        content-visibility: auto;
+        contain-intrinsic-size: 0 800px;
+      }
+
       /* Hide the OS cursor site-wide ONLY if the custom cursor script activates */
       @media (hover: hover) and (pointer: fine) {
 

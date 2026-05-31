@@ -7,6 +7,9 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>BlueKeys | Seamless Connectivity</title>
   <link rel="icon" type="image/x-icon" href="assets/logo/logo%20.ico" />
+  <!-- [B] Preconnect: resolves DNS + TLS for Google Fonts before the browser parses the full <head> -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <!-- Tailwind config MUST come after the CDN script -->
   <script>
@@ -45,24 +48,7 @@
   <script src="js/script.js" defer></script>
   <script src="js/shader-upgrade.js" defer></script>
   <link rel="stylesheet" href="css/style.css" />
-  <style data-purpose="typography">
-    .gallery-title-prefix::before {
-      content: "—";
-      margin-right: 0.5rem;
-      font-weight: 300;
-    }
-
-    .caption-text {
-      font-size: 8px;
-      letter-spacing: 0.15em;
-      font-weight: 500;
-      font-family: 'Inter', sans-serif;
-      color: #64748b;
-      /* Slate grey / dark grey */
-      text-transform: uppercase;
-      line-height: 1;
-    }
-  </style>
+  <!-- [I] Typography styles moved to css/style.css -->
   <style data-purpose="animations">
     @keyframes revealCard {
       from {
@@ -593,9 +579,11 @@
         })();
       </script>
 
-      <!-- Background Glow (Left) - uses opacity gradient instead of blur for performance -->
+      <!-- Background Glow (Left) - decorative only, no pointer events -->
+      <!-- [F] pointer-events:none prevents invisible tap targets on mobile -->
       <div
-        class="absolute top-1/3 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[100%] bg-primary/5 rounded-full -z-10 opacity-60">
+        class="absolute top-1/3 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[100%] bg-primary/5 rounded-full -z-10 opacity-60"
+        aria-hidden="true" style="pointer-events:none">
       </div>
 
       <div
@@ -624,6 +612,7 @@
                 class="absolute -inset-[2px] rounded-full opacity-0 transition-opacity duration-[1500ms] ease-out pointer-events-none animate-rgb-flow"
                 aria-hidden="true"></div>
 
+              <!-- [J] rel=noopener noreferrer prevents tab-napping on external links -->
               <a href="https://play.google.com/store/apps/details?id=com.blukeys.hidremote"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -661,8 +650,10 @@
         <!-- Right Showcase Area (The "Curated Gallery" Dual-Mockup Stack) -->
         <div class="relative flex justify-center lg:justify-center items-center overflow-visible w-full">
           <!-- Background Decorative Element -->
+          <!-- [F] pointer-events:none — decorative blob, not a tap target -->
           <div
-            class="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[#8ecae6]/20 rounded-full -z-10 opacity-60">
+            class="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[#8ecae6]/20 rounded-full -z-10 opacity-60"
+            aria-hidden="true" style="pointer-events:none">
           </div>
 
           <!-- Mobile/Tablet Layout (Portrait) -->
@@ -705,7 +696,8 @@
           </div>
 
           <!-- Mobile View (< 768px) - High-End Centerpiece Slideshow -->
-          <div class="flex flex-col md:hidden items-center justify-center w-full gap-y-6">
+          <!-- [E] touch-action:pan-y allows vertical scroll, prevents horizontal hijack -->
+          <div class="flex flex-col md:hidden items-center justify-center w-full gap-y-6" style="touch-action:pan-y">
             <!-- Mockup & Arrows Container -->
             <div class="relative flex items-center justify-center w-full px-12">
               <!-- Mockup Frame -->
@@ -775,7 +767,8 @@
           </div>
 
           <!-- Desktop Layout (Widescreen Slideshow - Aligned Column Center, Compact & Premium) -->
-          <div class="hidden lg:flex flex-col items-center justify-center relative w-full gap-y-4">
+          <!-- [E] touch-action:pan-y for tablets showing desktop layout -->
+          <div class="hidden lg:flex flex-col items-center justify-center relative w-full gap-y-4" style="touch-action:pan-y">
             <!-- Slideshow Viewport Container -->
             <div id="desktop-slideshow-container"
               class="relative w-[95%] lg:w-[90%] max-w-2xl xl:max-w-4xl 2xl:max-w-5xl group/slideshow float-y-2 z-10">
@@ -861,15 +854,17 @@
           </h2>
         </header>
         <!-- Photo Grid: Dynamic Aspect-Ratio Masonry Layout with Shadows and Premium Overlapped Captions -->
+        <!-- [D] content-visibility: auto skips rendering off-screen gallery rows -->
+        <!-- Applied via CSS on .image-grid — see style.css -->
         <section class="columns-1 md:columns-2 lg:columns-3 gap-8" data-purpose="image-grid">
 
-          <!-- Item 1: Keyboard Interface (Landscape) -->
+          <!-- Item 1: Keyboard Interface (Landscape) - first item keeps fetchpriority=high -->
           <div
             class="relative overflow-hidden rounded-lg border border-white/30 bg-white/30 backdrop-blur-md backdrop-saturate-150 shadow-lg break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-white/50 hover:bg-white/40"
             data-purpose="gallery-tile" data-reveal="fade-up">
             <div class="relative overflow-hidden">
               <img alt="BlueKeys Bluetooth Keyboard landscape interface" class="w-full h-auto image-zoom"
-                src="light/landscape/keybaord.webp" width="2400" height="1080" decoding="async" fetchpriority="high" />
+                src="light/landscape/keybaord.webp" width="2400" height="1080" decoding="async" loading="lazy" fetchpriority="low" />
               <!-- Staggered horizontal curtain wipe reveal -->
               <div class="reveal-curtain"></div>
             </div>
@@ -880,8 +875,9 @@
             class="relative overflow-hidden rounded-lg border border-white/30 bg-white/30 backdrop-blur-md backdrop-saturate-150 shadow-lg break-inside-avoid mb-8 gallery-item transition-all duration-500 hover:shadow-xl hover:border-white/50 hover:bg-white/40"
             data-purpose="gallery-tile" data-reveal="fade-up">
             <div class="relative overflow-hidden">
+              <!-- [C] fetchpriority=low — gallery is below fold, hero loads first -->
               <img alt="BlueKeys Interactive Homescreen Widget for quick control" class="w-full h-auto image-zoom"
-                src="light/widget_optimized.jpg" width="800" height="606" decoding="async" fetchpriority="high" />
+                src="light/widget_optimized.jpg" width="800" height="606" decoding="async" loading="lazy" fetchpriority="low" />
               <!-- Staggered horizontal curtain wipe reveal -->
               <div class="reveal-curtain"></div>
               <!-- Minimalist Transparent Caption Overlaid (Bottom-Centered, Small Cute Grey Text) -->
